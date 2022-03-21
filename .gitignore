@@ -5,7 +5,10 @@
 .vscode/launch.json
 .vscode/ipch
 
-# VSCode
+# libdeps: this folder should be automatically maintained by PlatformIO
+libdeps/
+
+# VSCode tweaks
 .vscode/
 
 # Prerequisites
