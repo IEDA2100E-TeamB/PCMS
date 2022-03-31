@@ -1,6 +1,10 @@
 # Parcel Condition Monitoring System (PCMS)
 
 ## Development environment:
+- Board:
+  - ~~Arduino UNO R3~~
+  - NodeMCU-32S
+  - ESP32-DevKitC
 - Framework: Arduino
 - IDE:
   - editor: [VSCode](https://code.visualstudio.com/)
