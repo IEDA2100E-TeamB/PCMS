@@ -1,7 +1,21 @@
 # Part A: Parcel Condition Monitoring System
 
-Development environment:
+## Development environment:
 - Framework: Arduino
 - IDE:
   - editor: [VSCode](https://code.visualstudio.com/)
-  - extensions: [PlatformIO](https://platformio.org/)
+  - extensions:
+    -  [PlatformIO](https://platformio.org/)
+    -  [C/C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
+
+## Useful reference websites:
+- PlatformIO:
+  - [Development Platform: Espressif 32](https://docs.platformio.org/en/latest/platforms/espressif32.html)
+  - [Development Board: NodeMCU-32S](https://docs.platformio.org/en/latest/boards/espressif32/nodemcu-32s.html) (The variant given to Hojin)
+  - [Development Board: ESP32-DevKitC](https://docs.platformio.org/en/latest/boards/espressif32/esp32dev.html) (The variant given to Tommy)
+- Espressif (Official Chip Manufacturer):
+  - [Development Framework: Arduino](https://docs.espressif.com/projects/arduino-esp32/en/latest/)
+  - [Development Framework: ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/index.html)
+  - [FAQ](https://docs.espressif.com/projects/espressif-esp-faq/en/latest/index.html)
+- Ai-Thinker
+  - [Development Board: NodeMCU-32S](https://docs.ai-thinker.com/en/esp32)
