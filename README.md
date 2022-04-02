@@ -23,3 +23,5 @@
   - [FAQ](https://docs.espressif.com/projects/espressif-esp-faq/en/latest/index.html)
 - Ai-Thinker
   - [Development Board: NodeMCU-32S](https://docs.ai-thinker.com/en/esp32)
+- HuaRobot
+  - [Development Board: ESP32-DevKitC](http://www.china-legends.cn/index.php?m=content&c=index&a=show&catid=15&id=28)
