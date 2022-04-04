@@ -1,5 +1,12 @@
 # Parcel Condition Monitoring System (PCMS)
 
+## Branches:
+- master: stable release
+- dev: development and merging test
+- dev_sensor: Part A: sensor system
+- **TBD**: Part B: parcel to gateway communication
+- **TBD**: Part C: GNSS system & parcel to server communication
+
 ## Development environment:
 - Board:
   - ~~Arduino UNO R3~~
