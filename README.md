@@ -1,5 +1,12 @@
 # Part A: sensor system
 
+## Branches:
+- master: stable release (PIC: Alex)
+- dev: development and merging test (PIC: Alex)
+- dev_sensor: Part A: sensor system (PIC: Alex)
+- **TBD**: Part B: parcel to gateway communication (PIC: Tommy)
+- **TBD**: Part C: GNSS system & parcel to server communication (PIC: Hojin)
+
 ## Development environment:
 - Board:
   - ~~Arduino UNO R3~~

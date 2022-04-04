@@ -1,5 +1,5 @@
-#ifndef TEST_BOARD
-#define TEST_BOARD
+#ifndef TEST_BOARD_H
+#define TEST_BOARD_H
 
 #include <Arduino.h>
 
