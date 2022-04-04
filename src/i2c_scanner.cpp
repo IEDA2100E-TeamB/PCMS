@@ -1,3 +1,4 @@
+// REF: https://randomnerdtutorials.com/solved-could-not-find-a-valid-bme280-sensor/#check-i2c-address
 #include "i2c_scanner.h"
 
 static uint32_t prevMillis = 0;
@@ -16,7 +17,7 @@ void scanner_loop()
 {
 	uint32_t currMillis = millis();
 	if (currMillis - prevMillis >= SCAN_INTERVAL) {
-                // update time
+		// update time
 		prevMillis = currMillis;
 
 		byte address, error;
