@@ -1,4 +1,4 @@
-# Part A: sensor system
+# Parcel Condition Monitoring System (PCMS)
 
 ## Branches:
 - master: stable release (PIC: Alex)
