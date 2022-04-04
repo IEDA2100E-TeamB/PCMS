@@ -1,4 +1,4 @@
-# Parcel Condition Monitoring System (PCMS)
+# Part A: sensor system
 
 ## Development environment:
 - Board:
