@@ -3,10 +3,12 @@
 
 #include <Arduino.h>
 
-void ledBlink(void);
-void ledBlinkWithoutDelay(void);
-void ledFade(void);
-void ledDimmer(void);
+void testSetup();
+void testLoop();
+void led_blink(void);
+void led_blinkWithoutDelay(void);
+void led_fade(void);
+void led_dimmer(void);
 void printASCII(void);
 
 #endif
