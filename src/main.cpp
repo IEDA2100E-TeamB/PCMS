@@ -1,5 +1,16 @@
 #include <Arduino.h>
-#include "test_board.hpp"
+#include "peripheral_bme280.h"
+// #include "test_board.h"
+// #include "i2c_scanner.h"
+
+// -------- DEFINES --------
+// please write down the pins used in ascending order:
+#define I2C_SDA 21
+#define I2C_SCL 22
+
+// -------- VARIABLES --------
+
+// -------- FUNCTION PROTOTYPES --------
 
 void setup()
 {
@@ -11,13 +22,16 @@ void setup()
 	// -------- TEST BOARD end --------
 
 	// put your setup code here, to run once:
+	Serial.begin(115200);
+	bme280_setup();
 }
 
 void loop()
 {
 	// -------- TEST BOARD start --------
-	// ledBlinkWithoutDelay();
+	// led_blinkWithoutDelay();
 	// -------- TEST BOARD end --------
 
 	// put your main code here, to run repeatedly:
+	bme280_print();
 }
