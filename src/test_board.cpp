@@ -1,13 +1,13 @@
 #include "test_board.h"
 
-// variables for ledBlinkWithoutDelay()
+// variables for led_blinkWithoutDelay()
 static uint8_t ledState = LOW;
 // Generally, you should use "unsigned long" for variables that hold time
 // The value will quickly become too large for an int to store
 static uint32_t prevMillis = 0; // last time LED status was updated
 static constexpr uint32_t BLINK_INTERVAL = 1000; // interval at which to blink (milliseconds)
 
-// variables for ledFade()
+// variables for led_fade()
 static int16_t ledBrightness = 0; // how bright the LED is
 static int16_t ledFadeAmount = 5; // how many points to fade the LED by
 
@@ -16,7 +16,7 @@ static String inputString = ""; // a String to hold incoming data
 static bool stringComplete = false; // whether the string is complete
 
 // -------- EXAMPLE OF TEST SETUP --------
-void test_setup()
+void testSetup()
 {
 	// put your setup code here, to run once:
 	Serial.begin(115200);
@@ -29,13 +29,13 @@ void test_setup()
 }
 
 // -------- EXAMPLE OF TEST LOOP --------
-void test_loop()
+void testLoop()
 {
 	// put your main code here, to run repeatedly:
-	// ledBlink();
-	// ledBlinkWithoutDelay();
-	ledFade();
-	// ledDimmer();
+	// led_blink();
+	// led_blinkWithoutDelay();
+	led_fade();
+	// led_dimmer();
 	// printASCII();
 	// print the string when a newline arrives:
 	if (stringComplete) {
@@ -46,7 +46,7 @@ void test_loop()
 	}
 }
 
-void ledBlink(void)
+void led_blink(void)
 {
 	// blink for 10 seconds
 	digitalWrite(LED_BUILTIN, HIGH); // turn the LED on (HIGH is the voltage level)
@@ -55,7 +55,7 @@ void ledBlink(void)
 	delay(1000); // wait for a second
 }
 
-void ledBlinkWithoutDelay(void)
+void led_blinkWithoutDelay(void)
 {
 	// check to see if it's time to blink the LED; that is, if the difference
 	// between the current time and last time you blinked the LED is bigger than
@@ -63,8 +63,6 @@ void ledBlinkWithoutDelay(void)
 	uint32_t currMillis = millis();
 
 	if (currMillis - prevMillis >= BLINK_INTERVAL) {
-		// save the last time you blinked the LED
-		prevMillis = currMillis;
 		// if the LED is off turn it on and vice-versa:
 		if (ledState == LOW) {
 			ledState = HIGH;
@@ -73,10 +71,12 @@ void ledBlinkWithoutDelay(void)
 		}
 		// set the LED with the ledState of the variable:
 		digitalWrite(LED_BUILTIN, ledState);
+		// save the last time you blinked the LED
+		prevMillis = currMillis;
 	}
 }
 
-void ledFade(void)
+void led_fade(void)
 {
 	// set the brightness of pin 9:
 	// analogWrite(LED_BUILTIN, ledBrightness);
@@ -90,7 +90,7 @@ void ledFade(void)
 	delay(20);
 }
 
-void ledDimmer(void)
+void led_dimmer(void)
 {
 	uint8_t brightness;
 	// check if data has been sent from the computer:

@@ -1,19 +1,14 @@
 #include <Arduino.h>
-#include <Adafruit_BME280.h>
-#include <Adafruit_MPU6050.h>
+#include "peripheral_bme280.h"
 // #include "test_board.h"
 // #include "i2c_scanner.h"
 
 // -------- DEFINES --------
-// #define BME280_ADDR 0x76
-// #define MPU6050_ADDR 0x68
+// please write down the pins used in ascending order:
+#define I2C_SDA 21
+#define I2C_SCL 22
 
 // -------- VARIABLES --------
-// Adafruit_BME280 bme; // use I2C interface
-// Adafruit_Sensor *bme_temp = bme.getTemperatureSensor();
-// Adafruit_Sensor *bme_pressure = bme.getPressureSensor();
-// Adafruit_Sensor *bme_humidity = bme.getHumiditySensor();
-Adafruit_MPU6050 mpu;
 
 // -------- FUNCTION PROTOTYPES --------
 
@@ -28,13 +23,15 @@ void setup()
 
 	// put your setup code here, to run once:
 	Serial.begin(115200);
+	bme280_setup();
 }
 
 void loop()
 {
 	// -------- TEST BOARD start --------
-	// ledBlinkWithoutDelay();
+	// led_blinkWithoutDelay();
 	// -------- TEST BOARD end --------
 
 	// put your main code here, to run repeatedly:
+	bme280_print();
 }

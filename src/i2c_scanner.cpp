@@ -1,11 +1,11 @@
-// REF: https://randomnerdtutorials.com/solved-could-not-find-a-valid-bme280-sensor/#check-i2c-address
+// REF: https://playground.arduino.cc/Main/I2cScanner/
 #include "i2c_scanner.h"
 
 static uint32_t prevMillis = 0;
 static constexpr uint32_t SCAN_INTERVAL = 5000;
 
 // -------- EXAMPLE OF SCANNER SETUP --------
-void scanner_setup()
+void i2cScannerSetup()
 {
 	Wire.begin();
 	Serial.begin(115200);
@@ -13,13 +13,10 @@ void scanner_setup()
 }
 
 // -------- EXAMPLE OF SCANNER LOOP --------
-void scanner_loop()
+void i2cScannerLoop()
 {
 	uint32_t currMillis = millis();
 	if (currMillis - prevMillis >= SCAN_INTERVAL) {
-		// update time
-		prevMillis = currMillis;
-
 		byte address, error;
 		int numDevices;
 		Serial.println("Scanning...");
@@ -48,5 +45,7 @@ void scanner_loop()
 			Serial.print(numDevices);
 			Serial.println(" devices found\n");
 		}
+		// update time
+		prevMillis = currMillis;
 	}
 }

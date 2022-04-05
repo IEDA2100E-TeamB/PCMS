@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-void scanner_setup();
-void scanner_loop();
+void i2cScannerSetup();
+void i2cScannerLoop();
 
 #endif
