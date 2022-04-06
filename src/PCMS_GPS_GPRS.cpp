@@ -1,15 +1,9 @@
 #include <PCMS_GPS_GPRS.hpp>
 
-String HOST = "cn.bing.com";
-String PATH = "/";
-String PORT = "80";
-
 int countTrueCommand=0;
 int countTimeCommand=0;
 boolean found = false;
-
-StaticJsonDocument<200> root;
-//JsonObject& root = jsonBuffer.to<JsonObject>();
+extern String GPS_data;
 
 void sendCommandToA9G(String command, int maxTime, const char readReplay[]) {
   Serial.print(countTrueCommand);
@@ -49,27 +43,19 @@ void ShowSerialData(){
   while (Serial2.available() > 0)
   {
     Serial.write(Serial2.read());
-    //delay(50);
   }
 }
 
+//-------------------------GPS---------------------------
 
 void start_GPS(){
-    Serial2.println("AT+GPS=0"); //turns on GPS
-    delay(1000);
-    ShowSerialData(); //displays output from A9G
-    Serial2.println("AT+GPSRD=2"); //retrieve GPS info every 5 seconds
-    delay(1000);
-    ShowSerialData(); //displays output from A9
+    sendCommandToA9G("AT+GPS=1",3,"OK"); //turns on GPS
+    sendCommandToA9G("AT+GPSRD=2",3,"OK"); //Display location data every 2seconds
 }
 
-void sendData(String postRequest) {
-  Serial.println(postRequest);
-  Serial2.print(postRequest);
-  delay(60000);
-  ShowSerialData();
-  countTrueCommand++;
-  
+void get_GPS_data(){
+    Serial2.println("AT+LOCATION=2");
+    ShowSerialData();
 }
 
 void terminate_GPS(){
@@ -81,62 +67,22 @@ void terminate_GPS(){
     ShowSerialData(); //displays output from A9
 }
 
-void start_GPRS(){
-    sendCommandToA9G("AT+CGDCONT=1,\"IP\",\"pccw\"",5,"OK");
-    sendCommandToA9G("AT+CIPMUX=1", 5, "OK");
-    sendCommandToA9G("AT+CIPSTART=\"TCP\",\"" + HOST + "\"," + PORT, 15, "OK");
-    
-    
-    
-    
 
-
-   // Serial2.println("AT+CIPSTART=\"TCP\",\"SuperScrapper.hojinyun.repl.co\",80"); //set APN for GPRS
-    //delay(1000);
-   // ShowSerialData();
+//-------------------------GPRS---------------------------
+void connect_mqqt_broker(){
+    sendCommandToA9G("AT+CGDCONT=1,\"IP\",\"pccw\"", 3, "OK");    
+    sendCommandToA9G("AT+CGACT=1,1", 5, "OK");
+    sendCommandToA9G("AT+MQTTCONN=\"broker.mqttdashboard.com\",1883,\"testclient\",120,0", 5, "OK");
 }
-void send_request_to_server(){
-  Serial2.println("AT+CIPSTATUS");
-  delay(500);
-  ShowSerialData();
-  Serial2.println("AT+CIFSR");
-  delay(500);
-  ShowSerialData();
-  root["name"] = "temperature";
-  root["data"] =  21.5;
-  String data;
-  serializeJson(root, data);
-  String postRequest = "GET / HTTP/1.1\r\nUser-Agent: curl/7.37.0\r\nHost: cn.bing.com\r\nAccept: */*\r\n";
-  /*String postRequest = "POST " + PATH  + " HTTP/1.1\r\n" +
-                        "Host: " + HOST + "\r\n" +
-                        data + "\r\n" +
-                      //"Accept: *" + "/" + "*\r\n" +
-                      //"Content-Length: " + data.length() + "\r\n" +
-                      "Content-Type: application/json";// +
-                      //"Authorization: Bearer " + DEVICE_SECRET_KEY + "\r\n" +*/
-  String cipSend = "AT+CIPSEND=0," + String(postRequest.length());
-  sendCommandToA9G(cipSend, 4, ">");
-  sendData(postRequest);               
 
+void send_JSON_data(){
+  sendCommandToA9G("AT+MQTTPUB=\"Test1\",\"JSON DATA\",0,0,0",5,"OK");         
 }
-/*
-void send_data(){
-    Serial2.print("AT+CIPSEND\r\n");
-    delay(500);
-    Serial2.print("GET / HTTP/1.1\r\n");
-    Serial2.print((char)26);
-    delay(1000);
-    ShowSerialData();
-}*/
 
-void terminate_GPRS(){
-    sendCommandToA9G("AT+CIPCLOSE", 5, "OK");
-
-
-    Serial2.println("^FTPCLOSE"); //disconnect from server
-    delay(1000);
-    ShowSerialData();
-    Serial2.println("AT+RST=2"); //terminate the whole module
-    delay(1000);
-    ShowSerialData();
+void terminate_broker_connection(){
+    sendCommandToA9G("AT+MQTTDISCONN", 5, "OK");
 }
+
+
+
+
