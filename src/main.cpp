@@ -1,23 +1,35 @@
 #include <Arduino.h>
 #include "test_board.hpp"
+#include "socket_conn.hpp"
 
 void setup()
 {
-	// -------- TEST BOARD start --------
-	// pinMode(LED_BUILTIN, OUTPUT);
 	Serial.begin(115200);
-	Serial.println("serial setup done!");
-	printASCII();
-	// -------- TEST BOARD end --------
+	WiFi.begin(ssid, password);
+	while (WiFi.status() != WL_CONNECTED) {
+		delay(500);
+		Serial.println("...");
+	}
 
-	// put your setup code here, to run once:
+	Serial.print("WiFi connected with IP: ");
+	Serial.println(WiFi.localIP());
 }
 
 void loop()
 {
-	// -------- TEST BOARD start --------
-	// ledBlinkWithoutDelay();
-	// -------- TEST BOARD end --------
+	WiFiClient client;
 
-	// put your main code here, to run repeatedly:
+	if (!client.connect(host, port)) {
+		Serial.println("Connection to host failed");
+
+		delay(1000);
+		return;
+	}
+
+	Serial.println("Connected to server successful!");
+
+	client.print("Hello from ESP32!");
+
+	Serial.println("Disconnecting...");
+	client.stop();
 }

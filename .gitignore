@@ -43,3 +43,5 @@ libdeps/
 *.exe
 *.out
 *.app
+
+*wifi_config.hpp
