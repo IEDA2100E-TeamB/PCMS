@@ -14,92 +14,98 @@ void bme280_setup()
 {
 	if (!bme.begin(BME280_ADDRESS_ALTERNATE, &Wire)) {
 		Serial.println("Could not find a valid BME280 sensor, check wiring!");
+		// TODO generate software interupt
 		while (1)
 			;
 	}
 
-	// additional setups
+	// REVIEW additional setups
 	// For more details on the following scenario,
 	// see chapter 3.5 "Recommended modes of operation" in the datasheet
 
 	bmeT->printSensorDetails();
-	bmeP->printSensorDetails();
 	bmeH->printSensorDetails();
+	bmeP->printSensorDetails();
 }
 
 float bme280_getTemperature_Celsius()
 {
-	// return bme.readTemperature();
+	return bme.readTemperature();
 
-	sensors_event_t eventTemperature;
-	bmeT->getEvent(&eventTemperature);
-	return eventTemperature.temperature;
+	// sensors_event_t eventTemperature;
+	// bmeT->getEvent(&eventTemperature);
+	// return eventTemperature.temperature;
 }
 
 float bme280_getHumidity()
 {
-	// return bme.readHumidity();
+	return bme.readHumidity();
 
-	sensors_event_t eventHumidity;
-	bmeH->getEvent(&eventHumidity);
-	return eventHumidity.relative_humidity;
+	// sensors_event_t eventHumidity;
+	// bmeH->getEvent(&eventHumidity);
+	// return eventHumidity.relative_humidity;
 }
 
 float bme280_getBaroPressure_hPa()
 {
-	// return bme.readPressure() / 100.0F;
+	return bme.readPressure() / 100.0F;
 
-	sensors_event_t eventBaroPressure;
-	bmeP->getEvent(&eventBaroPressure);
-	return eventBaroPressure.pressure;
+	// sensors_event_t eventBaroPressure;
+	// bmeP->getEvent(&eventBaroPressure);
+	// return eventBaroPressure.pressure;
 }
 
-float bme280_getAltitude(float seaLevelPressure = SEALEVELPRESSURE_HPA)
+float bme280_getAltitude()
 {
-	// return bme.readAltitude(seaLevelPressure);
+	return bme280_getAltitude(SEALEVELPRESSURE_HPA);
+}
 
-	// TODO
+float bme280_getAltitude(float seaLevelPressure)
+{
+	return bme.readAltitude(seaLevelPressure);
+
+	// sensors_event_t eventBaroPressure;
+	// bmeP->getEvent(&eventBaroPressure);
+	// return 44330.0 * (1.0 - pow(eventBaroPressure.pressure / seaLevelPressure, 0.1903));
 }
 
 void bme280_print()
 {
-	// HACK sometimes cannot connect to sensor.
-	// hacked by changing library calls
-	// consider creating post at https://forums.adafruit.com/viewforum.php?f=19 or https://github.com/adafruit/Adafruit_BME280_Library/issues
+	// !!! NodeMCU-32S sometimes cannot init 12c ports. ESP32-DevKitC works fine.
 	uint32_t currMillis = millis();
 	if (currMillis - prevMillis >= MEASURE_DELAY) {
-		// Serial.print("Temperature = ");
-		// Serial.print(bme.readTemperature());
-		// Serial.println(" *C");
-
-		// Serial.print("Humidity = ");
-		// Serial.print(bme.readHumidity());
-		// Serial.println(" %");
-
-		// Serial.print("Pressure = ");
-		// Serial.print(bme.readPressure() / 100.0F);
-		// Serial.println(" hPa");
-
-		// Serial.print("Approx. Altitude = ");
-		// Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
-		// Serial.println(" m");
-
-		sensors_event_t eventTemperature, eventHumidity, eventBaroPressure;
-		bmeT->getEvent(&eventTemperature);
-		bmeH->getEvent(&eventHumidity);
-		bmeP->getEvent(&eventBaroPressure);
-
-		Serial.print(F("Temperature = "));
-		Serial.print(eventTemperature.temperature);
+		Serial.print("Temperature = ");
+		Serial.print(bme.readTemperature());
 		Serial.println(" *C");
 
-		Serial.print(F("Humidity = "));
-		Serial.print(eventHumidity.relative_humidity);
+		Serial.print("Humidity = ");
+		Serial.print(bme.readHumidity());
 		Serial.println(" %");
 
-		Serial.print(F("Pressure = "));
-		Serial.print(eventBaroPressure.pressure);
+		Serial.print("Pressure = ");
+		Serial.print(bme.readPressure() / 100.0F);
 		Serial.println(" hPa");
+
+		Serial.print("Approx. Altitude = ");
+		Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
+		Serial.println(" m");
+
+		// sensors_event_t eventTemperature, eventHumidity, eventBaroPressure;
+		// bmeT->getEvent(&eventTemperature);
+		// bmeH->getEvent(&eventHumidity);
+		// bmeP->getEvent(&eventBaroPressure);
+
+		// Serial.print(F("Temperature = "));
+		// Serial.print(eventTemperature.temperature);
+		// Serial.println(" *C");
+
+		// Serial.print(F("Humidity = "));
+		// Serial.print(eventHumidity.relative_humidity);
+		// Serial.println(" %");
+
+		// Serial.print(F("Pressure = "));
+		// Serial.print(eventBaroPressure.pressure);
+		// Serial.println(" hPa");
 
 		Serial.println();
 		prevMillis = currMillis;
