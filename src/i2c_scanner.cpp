@@ -2,7 +2,7 @@
 #include "i2c_scanner.h"
 
 static uint32_t prevMillis = 0;
-static constexpr uint32_t SCAN_INTERVAL = 5000;
+static constexpr uint32_t SCAN_INTERVAL = 1000;
 
 // -------- EXAMPLE OF SCANNER SETUP --------
 void i2cScannerSetup()
@@ -31,8 +31,34 @@ void i2cScannerLoop()
 				}
 				Serial.println(address, HEX);
 				numDevices++;
+			} else if (error == 1) {
+				// Serial.print("I2C device found at address 0x");
+				// if (address < 16) {
+				// 	Serial.print("0");
+				// }
+				// Serial.print(address, HEX);
+				// Serial.println(" but data is too huge for buffer");
+				// numDevices++;
+			} else if (error == 2) {
+				// Serial.print("Received NACK when sending address at address 0x");
+				// if (address < 16) {
+				// 	Serial.print("0");
+				// }
+				// Serial.println(address, HEX);
+			} else if (error == 3) {
+				// Serial.print("Received NACK when sending data at address 0x");
+				// if (address < 16) {
+				// 	Serial.print("0");
+				// }
+				// Serial.println(address, HEX);
 			} else if (error == 4) {
-				Serial.print("Unknow error at address 0x");
+				Serial.print("Unknown error at address 0x");
+				if (address < 16) {
+					Serial.print("0");
+				}
+				Serial.println(address, HEX);
+			} else {
+				Serial.print("Unknown error code at address 0x");
 				if (address < 16) {
 					Serial.print("0");
 				}
