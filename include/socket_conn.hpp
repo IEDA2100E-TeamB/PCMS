@@ -2,8 +2,7 @@
 #define SOCKET_CONN
 
 #include <WiFi.h>
-#include "wifi_config.hpp"
 
-void socket_init(void);
+bool wifi_init(void);
 
 #endif

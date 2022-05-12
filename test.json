@@ -1,0 +1,15 @@
+{
+    "parcel_id": 12,
+    "message_id": "asdfdfds",
+    "message_type": "sensor_data",
+    "timestamp": "1526450324",
+    "message_body": {
+        "temperature": "25.0",
+        "humidity": "50.0",
+        "pressure": "100.0",
+        "magnetic_field": "0.0",
+        "orientation": "23.2:3.2",
+        "opened": 0,
+        "check_time": "2022-03-01 13:44:00"
+    }
+}

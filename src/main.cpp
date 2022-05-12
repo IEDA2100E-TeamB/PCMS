@@ -1,30 +1,29 @@
 #include <Arduino.h>
-#include "test_board.hpp"
 #include "socket_conn.hpp"
+
+bool connectSuccessful = false;
 
 void setup()
 {
-	Serial.begin(115200);
-	WiFi.begin(ssid, password);
-	while (WiFi.status() != WL_CONNECTED) {
-		delay(500);
-		Serial.println("...");
-	}
-
-	Serial.print("WiFi connected with IP: ");
-	Serial.println(WiFi.localIP());
+	connectSuccessful = wifi_init();
 }
 
 void loop()
 {
 	WiFiClient client;
 
-	if (!client.connect(host, port)) {
-		Serial.println("Connection to host failed");
+	// if (!client.connect(host, port)) {
+	// 	Serial.println("Connection to host failed");
 
-		delay(1000);
-		return;
-	}
+	// 	delay(1000);
+	// 	return;
+	// }
+
+	Serial.print("Time: ");
+	unsigned long myTime = millis();
+
+	Serial.println(myTime); // prints time since program started
+	delay(1000);
 
 	Serial.println("Connected to server successful!");
 
