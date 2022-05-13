@@ -1,6 +1,5 @@
 {
-    "parcel_id": 12,
-    "message_id": "asdfdfds",
+    "parcel_id": "ASD",
     "message_type": "sensor_data",
     "timestamp": "1526450324",
     "message_body": {

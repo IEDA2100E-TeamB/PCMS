@@ -1,5 +1,5 @@
-#ifndef SENSOR_DATA_HPP
-#define SENSOR_DATA_HPP
+#ifndef SENSOR_DATA
+#define SENSOR_DATA
 
 #include <Arduino.h>
 

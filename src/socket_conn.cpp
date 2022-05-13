@@ -9,54 +9,55 @@ WiFiClient client;
 
 bool wifi_init(void)
 {
-	const char* ssid = wifiConfigList[0].ssid;
-	const char* password = wifiConfigList[0].password;
+	// TODO: currently hardcoded, needs change
+	const char *ssid = wifiConfigList[0].ssid;
+	const char *password = wifiConfigList[0].password;
+
+	Serial.print("Connecting to WiFi-");
+	Serial.println(ssid);
+	WiFi.mode(WIFI_STA);
 	WiFi.begin(ssid, password);
 	for (int i = 0; i < wifiRetryNum; ++i) {
-		Serial.println(WiFi.status());
 		if (WiFi.status() != WL_CONNECTED) {
 			delay(1000);
-			Serial.println("...");
+			Serial.print(".");
 			continue;
 		}
-		Serial.print("WiFi ");
-		Serial.print(ssid);
-		Serial.print(" connected with IP: ");
 		Serial.println(WiFi.localIP());
 		return true;
 	}
-	Serial.print("Failed to connect to WiFi ");
-	Serial.println(ssid);
+
+	Serial.println("Failed");
 	return false;
 }
 
 bool socket_connect(void)
 {
-	const char* host = hostConfigList[0].host;
+	// TODO: currently hardcoded, needs change
+	const char *host = hostConfigList[0].host;
 	uint16_t port = hostConfigList[0].port;
-	for (int i = 0; i < socketRetryNum; ++i) {
-		if (!client.connect(host, port)) {
-			delay(1000);
-			Serial.println("...");
-			continue;
-		}
-		Serial.print("Connected to the host: ");
-		Serial.print(host);
-		Serial.print(":");
-		Serial.println(port);
-		return true;
-	}
-	Serial.print("Failed to connect to the host: ");
+
+	Serial.print("Connecting to host-");
 	Serial.print(host);
 	Serial.print(":");
 	Serial.println(port);
+	for (int i = 0; i < socketRetryNum; ++i) {
+		if (!client.connect(host, port)) {
+			delay(1000);
+			Serial.print(".");
+			continue;
+		}
+		Serial.println("Success!");
+		return true;
+	}
+	Serial.println("Failed");
 	return false;
 }
 
 void socket_disconnect(void)
 {
 	client.stop();
-	Serial.println("Disconnected from the host");
+	Serial.println("Disconnected from host");
 }
 
 void wifi_disconnect(void)
@@ -65,15 +66,10 @@ void wifi_disconnect(void)
 		client.stop();
 	}
 	WiFi.disconnect();
-	Serial.println("Disconnected from the WiFi");
+	Serial.println("Disconnected from WiFi");
 }
 
-String make_massage_header(void)
-{
-	
-}
-
-bool socket_send_sensor_data(SensorData* sensorData)
+bool socket_send_sensor_data(SensorData *sensorData)
 {
 	if (!client.connected()) {
 		if (!socket_connect()) {
