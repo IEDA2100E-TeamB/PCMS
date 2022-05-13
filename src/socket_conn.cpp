@@ -1,5 +1,6 @@
 #include "socket_conn.hpp"
-#include "wifi_config.hpp"
+#include "sensor_data.hpp"
+#include "config.hpp"
 
 const uint8_t wifiRetryNum = 5;
 const uint8_t socketRetryNum = 5;
@@ -8,6 +9,8 @@ WiFiClient client;
 
 bool wifi_init(void)
 {
+	const char* ssid = wifiConfigList[0].ssid;
+	const char* password = wifiConfigList[0].password;
 	WiFi.begin(ssid, password);
 	for (int i = 0; i < wifiRetryNum; ++i) {
 		Serial.println(WiFi.status());
@@ -29,6 +32,8 @@ bool wifi_init(void)
 
 bool socket_connect(void)
 {
+	const char* host = hostConfigList[0].host;
+	uint16_t port = hostConfigList[0].port;
 	for (int i = 0; i < socketRetryNum; ++i) {
 		if (!client.connect(host, port)) {
 			delay(1000);
@@ -56,7 +61,27 @@ void socket_disconnect(void)
 
 void wifi_disconnect(void)
 {
-	client.stop();
+	if (client.connected()) {
+		client.stop();
+	}
 	WiFi.disconnect();
 	Serial.println("Disconnected from the WiFi");
+}
+
+String make_massage_header(void)
+{
+	
+}
+
+bool socket_send_sensor_data(SensorData* sensorData)
+{
+	if (!client.connected()) {
+		if (!socket_connect()) {
+			return false;
+		}
+	}
+	String json = sensorData->toJson();
+	Serial.println(json);
+	client.println(json);
+	return true;
 }

@@ -44,4 +44,4 @@ libdeps/
 *.out
 *.app
 
-*wifi_config.hpp
+*/config.cpp
