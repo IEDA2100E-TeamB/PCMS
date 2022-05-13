@@ -1,5 +1,6 @@
 #include "socket_conn.hpp"
 #include "sensor_data.hpp"
+#include "unix_time.hpp"
 #include "config.hpp"
 
 const uint8_t wifiRetryNum = 5;
@@ -13,8 +14,8 @@ bool wifi_init(void)
 	const char *ssid = wifiConfigList[0].ssid;
 	const char *password = wifiConfigList[0].password;
 
-	Serial.print("Connecting to WiFi-");
-	Serial.println(ssid);
+	Serial.print("Connecting to WiFi: ");
+	Serial.print(ssid);
 	WiFi.mode(WIFI_STA);
 	WiFi.begin(ssid, password);
 	for (int i = 0; i < wifiRetryNum; ++i) {
@@ -37,7 +38,7 @@ bool socket_connect(void)
 	const char *host = hostConfigList[0].host;
 	uint16_t port = hostConfigList[0].port;
 
-	Serial.print("Connecting to host-");
+	Serial.print("Connecting to host: ");
 	Serial.print(host);
 	Serial.print(":");
 	Serial.println(port);
@@ -76,8 +77,13 @@ bool socket_send_sensor_data(SensorData *sensorData)
 			return false;
 		}
 	}
-	String json = sensorData->toJson();
+	String json = "{";
+	json += "\"parcel_id\":\"" + String(parcelID) + "\",";
+	json += "\"message_type\":" + String(MSG_SENSOR_DATA) + ",";
+	json += "\"timestamp\":" + String(get_time()) + ",";
+	json += "\"body\":";
+	json += sensorData->to_json();
+	json += "}";
 	Serial.println(json);
-	client.println(json);
 	return true;
 }

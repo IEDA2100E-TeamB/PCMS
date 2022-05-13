@@ -44,34 +44,20 @@ void SensorData::print(void)
 	Serial.println(this->checkTime);
 }
 
-String SensorData::toJson(void)
+String SensorData::to_json(void)
 {
 	String json = "{";
-	json += "\"temperature\":\"";
-	json += this->temperature;
-	json += "\",";
-	json += "\"humidity\":\"";
-	json += this->humidity;
-	json += "\",";
-	json += "\"pressure\":\"";
-	json += this->pressure;
-	json += "\",";
-	json += "\"magneticField\":\"";
-	json += this->magneticField;
-	json += "\",";
+	json += "\"temperature\":" + String(this->temperature) + ",";
+	json += "\"humidity\":" + String(this->humidity) + ",";
+	json += "\"pressure\":" + String(this->pressure) + ",";
+	json += "\"magneticField\":" + String(this->magneticField) + ",";
 	json += "\"orientation\":\"";
 	json += this->orientation.acceleration;
 	json += ":";
 	json += this->orientation.gyroscope;
 	json += "\",";
-    json += "\"gpsLocation\":\"";
-	json += "\"";
-	json += this->gpsLocation;
-	json += "\"checkTime\":\"";
-	json += "\"";
-	json += this->checkTime;
-	json += "\"";
+    json += "\"gpsLocation\":\"" + String(this->gpsLocation) + "\",";
+	json += "\"checkTime\":\"" + String(this->checkTime) + "\""; 
 	json += "}";
-	Serial.println(json);
 	return json;
 }

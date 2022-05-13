@@ -24,7 +24,7 @@ class SensorData {
 	void update(double temperature, double humidity, double pressure, double magneticField, double acceleration,
 		    double gyroscope, String gpsLocation, String checkTime);
 	void print(void);
-	String toJson(void);
+	String to_json(void);
 };
 
 #endif

@@ -25,8 +25,12 @@ void setup()
 
 void loop()
 {
-	if (isSocketConnectSuccess) {
-		Serial.println("So far so good");
-		delay(1000000);
+	if (!isSocketConnectSuccess)
+	{
+		return;
 	}
+
+	SensorData sensorData(1.1, 1.1, 1.1, 1.1, 1.1, 1.1, String("test"), String(get_time()));
+	socket_send_sensor_data(&sensorData);
+	delay(10000);
 }
