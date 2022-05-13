@@ -8,7 +8,6 @@ WiFiClient client;
 
 bool wifi_init(void)
 {
-	Serial.begin(115200);
 	WiFi.begin(ssid, password);
 	for (int i = 0; i < wifiRetryNum; ++i) {
 		Serial.println(WiFi.status());

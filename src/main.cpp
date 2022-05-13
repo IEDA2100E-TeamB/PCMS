@@ -1,15 +1,25 @@
 #include <Arduino.h>
-// #include "socket_conn.hpp"
 #include <WiFi.h>
 #include "socket_conn.hpp"
+#include "sensor_data.hpp"
 
-bool connectSuccessful = false;
+bool isWiFiInitSuccess = false;
+bool isSocketConnectSuccess = false;
 
 void setup()
 {
-	connectSuccessful = wifi_init();
+	Serial.begin(115200);
+	isWiFiInitSuccess = wifi_init();
+
+	if (isWiFiInitSuccess) {
+		isSocketConnectSuccess = socket_connect();
+	}
 }
 
 void loop()
 {
+	if (isSocketConnectSuccess) {
+		Serial.println("So far so good");
+		delay(1000000);
+	}
 }
