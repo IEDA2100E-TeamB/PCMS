@@ -113,9 +113,10 @@ void mpu6050_print()
 		Serial.print(eventGyro.gyro.z);
 		Serial.println();
 
-		Serial.print("Temperature (*C): ");
-		Serial.print(eventTemperature.temperature);
-		Serial.println();
+		// not using this
+		// Serial.print("Temperature (*C): ");
+		// Serial.print(eventTemperature.temperature);
+		// Serial.println();
 
 		Serial.println();
 		prevMillis = currMillis;
