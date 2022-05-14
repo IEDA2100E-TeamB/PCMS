@@ -21,4 +21,6 @@ void socket_disconnect(void);
 
 bool socket_send_sensor_data(SensorData *);
 
+bool socket_send_alarm_message(bool isAlarming);
+
 #endif
