@@ -85,5 +85,6 @@ bool socket_send_sensor_data(SensorData *sensorData)
 	json += sensorData->to_json();
 	json += "}";
 	Serial.println(json);
+	client.println(json);
 	return true;
 }

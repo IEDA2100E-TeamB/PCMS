@@ -50,14 +50,14 @@ String SensorData::to_json(void)
 	json += "\"temperature\":" + String(this->temperature) + ",";
 	json += "\"humidity\":" + String(this->humidity) + ",";
 	json += "\"pressure\":" + String(this->pressure) + ",";
-	json += "\"magneticField\":" + String(this->magneticField) + ",";
+	json += "\"magnetic_field\":" + String(this->magneticField) + ",";
 	json += "\"orientation\":\"";
 	json += this->orientation.acceleration;
 	json += ":";
 	json += this->orientation.gyroscope;
 	json += "\",";
-    json += "\"gpsLocation\":\"" + String(this->gpsLocation) + "\",";
-	json += "\"checkTime\":\"" + String(this->checkTime) + "\""; 
+    json += "\"gps_location\":\"" + String(this->gpsLocation) + "\",";
+	json += "\"check_time\":\"" + String(this->checkTime) + "\""; 
 	json += "}";
 	return json;
 }
