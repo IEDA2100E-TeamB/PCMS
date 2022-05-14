@@ -10,10 +10,11 @@ void turnOff_A9G();
 //GPS
 void start_GPS();
 void get_GPS_data();
-void terminate_GPS();
 //GPRS
 void connect_mqqt_broker();
 void send_JSON_data();
-void terminate_broker_connection();
+void check_new_threshold();
+
+void turn_off_A9G();
 
 #endif

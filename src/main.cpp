@@ -8,19 +8,21 @@ String GPS_data="";
 
 void setup()
 {
-  delay(15000);
   Serial.begin(115200);
   Serial2.begin(115200);
-  sendCommandToA9G("AT", 5, "OK");
+  delay(15000);
+  
+
 }
  
 void loop()
 {
   if(disconnected_gateway==true){
-    //when A9G off
+    //when disconnected from gateway turn on A9G
     if(A9G_state==false){
-      //sendCommandToA9G("AT+SLEEP=0",3,"OK"); //wake A9G up
-      //delay(2000);
+	  Serial.print("ON");
+	  //digitalWrite(23, HIGH);
+	  
       connect_mqqt_broker();
       start_GPS();
       A9G_state=true;
@@ -34,19 +36,16 @@ void loop()
       //ShowSerialData();
       Serial.println();
       send_JSON_data();
-
+	  check_new_threshold();
       delay(1000);
     }
   }
   else{
-    if(A9G_state==true){
-      terminate_GPS();
-      terminate_broker_connection();
-      //sendCommandToA9G("AT+SLEEP=2",3,"OK"); //low power consumption mode
+	  Serial.print("OFF");
+	  turn_off_A9G();
       A9G_state=false;
-    }
     //send data to gateway device
   }
   Serial.println();
-  delay(1000);
+  delay(500);
 }
