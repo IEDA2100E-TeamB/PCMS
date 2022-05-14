@@ -42,6 +42,7 @@ void sendCommandToA9G(String command, int maxTime, const char readReplay[]) {
 void ShowSerialData(){
   while (Serial2.available() > 0)
   {
+    
     Serial.write(Serial2.read());
   }
 }
@@ -50,11 +51,11 @@ void ShowSerialData(){
 
 void start_GPS(){
     sendCommandToA9G("AT+GPS=1",3,"OK"); //turns on GPS
-    sendCommandToA9G("AT+GPSRD=2",3,"OK"); //Display location data every 2seconds
+    //sendCommandToA9G("AT+GPSRD=2",3,"OK"); //Display location data every 2seconds
 }
 
 void get_GPS_data(){
-    Serial2.println("AT+LOCATION=2");
+    sendCommandToA9G("AT+LOCATION=2");
     ShowSerialData();
 }
 

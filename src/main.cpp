@@ -8,6 +8,7 @@ String GPS_data="";
 
 void setup()
 {
+  delay(15000);
   Serial.begin(115200);
   Serial2.begin(115200);
   sendCommandToA9G("AT", 5, "OK");
