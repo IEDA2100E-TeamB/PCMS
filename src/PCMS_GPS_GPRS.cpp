@@ -5,12 +5,9 @@
 #include <sensor_data.hpp>
 #include <threshold.hpp>
 
-using namespace Threshold;
-using namespace SensorData;
-
 int countTrueCommand=0;
 int countTimeCommand=0;
-boolean found = false;
+bool found = false;
 String saved_serial_buffer="",gpsLocation="";
 extern String GPS_data;
 
@@ -88,10 +85,10 @@ void connect_mqqt_broker(){
     sendCommandToA9G("AT+MQTTSUB=\"IEDA_test\",1,0", 3, "OK");
 }
 
-void check_new_threshold(){
+Threshold check_new_threshold(){
   String serial_buffer="", string_serial_buffer="";
   String string_minTemperature="", string_maxTemperature="", string_minHumidity="", string_maxHumidity="";
-  String string_minPressure="", string_maxPressure="", string_allowMagneticFeild="", sring_allowOrientationChange="";
+  String string_minPressure="", string_maxPressure="", string_allowMagneticField="", sring_allowOrientationChange="";
   Serial.print("----checking for new threshold----\n");
   serial_buffer=Serial2.readString();
   Serial.print(serial_buffer+'\n');
@@ -116,32 +113,30 @@ void check_new_threshold(){
     string_maxPressure=string_serial_buffer.substring(string_serial_buffer.indexOf("maxPressure"));
     string_maxPressure=string_maxPressure.substring(string_maxPressure.indexOf(":")+1,string_maxPressure.indexOf("/"));
 
-    string_allowMagneticFeild=string_serial_buffer.substring(string_serial_buffer.indexOf("allowMagneticFeild"));
-    string_allowMagneticFeild=string_allowMagneticFeild.substring(string_allowMagneticFeild.indexOf(":")+1,string_allowMagneticFeild.indexOf("/"));
+    string_allowMagneticField=string_serial_buffer.substring(string_serial_buffer.indexOf("allowMagneticFeild"));
+    string_allowMagneticField=string_allowMagneticField.substring(string_allowMagneticField.indexOf(":")+1,string_allowMagneticField.indexOf("/"));
 
     sring_allowOrientationChange=string_serial_buffer.substring(string_serial_buffer.indexOf("allowOrientationChange"));
     sring_allowOrientationChange=sring_allowOrientationChange.substring(sring_allowOrientationChange.indexOf(":")+1,sring_allowOrientationChange.indexOf("/"));
 
+    bool tempMagneticField, tempOrientation;
+    if(string_allowMagneticField.toInt()>0) tempMagneticField = true;
+    else tempMagneticField = false;
+    if(sring_allowOrientationChange.toInt()>0) tempOrientation=true;
+    else tempOrientation=false;
+    Threshold threshold(string_minTemperature.toDouble(),string_maxTemperature.toDouble(),string_minHumidity.toDouble(),string_maxHumidity.toDouble(),
+                      string_minPressure.toDouble(), string_maxPressure.toDouble(), tempMagneticField, tempOrientation);
+    return threshold;
     
-    minTemperature=string_minTemperature.toDouble();
-    maxTemperature=string_maxTemperature.toDouble();
-    minHumidity=string_minHumidity.toDouble();
-    maxHumidity=string_maxHumidity.toDouble();
-    minPressure=string_minPressure.toDouble();
-    maxPressure=string_maxPressure.toDouble();
-    if(string_allowMagneticFeild.toInt()>0) allowMagneticFeild = true;
-    else allowMagneticFeild = false;
-    if(sring_allowOrientationChange.toInt()>0) allowOrientationChange=true;
-    else allowOrientationChange=false;
     
 
-    Serial.print("NEW THRESHOLD DETECTED: "+ string_minTemperature+" "+string_maxTemperature+" "+string_minHumidity+" "+string_maxHumidity+" "+string_minPressure+" "+
-    string_maxPressure+" "+string_allowMagneticFeild+" "+sring_allowOrientationChange+'\n');
-    return;
+    //Serial.print("NEW THRESHOLD DETECTED: "+ string_minTemperature+" "+string_maxTemperature+" "+string_minHumidity+" "+string_maxHumidity+" "+string_minPressure+" "+
+    //string_maxPressure+" "+string_allowMagneticField+" "+sring_allowOrientationChange+'\n');
+    //return;
   }
 
 
-  if(serial_buffer.indexOf("minTemperature")==-1) Serial.print("NO THRESHOLD DETECTED\n");
+  if(serial_buffer.indexOf("minTemperature")==-1) Serial.print("NO_THRESHOLD");
   else{
     string_serial_buffer=serial_buffer.substring(serial_buffer.indexOf("minTemperature"));
 
@@ -162,33 +157,32 @@ void check_new_threshold(){
     string_maxPressure=string_serial_buffer.substring(string_serial_buffer.indexOf("maxPressure"));
     string_maxPressure=string_maxPressure.substring(string_maxPressure.indexOf(":")+1,string_maxPressure.indexOf("/"));
 
-    string_allowMagneticFeild=string_serial_buffer.substring(string_serial_buffer.indexOf("allowMagneticFeild"));
-    string_allowMagneticFeild=string_allowMagneticFeild.substring(string_allowMagneticFeild.indexOf(":")+1,string_allowMagneticFeild.indexOf("/"));
+    string_allowMagneticField=string_serial_buffer.substring(string_serial_buffer.indexOf("allowMagneticFeild"));
+    string_allowMagneticField=string_allowMagneticField.substring(string_allowMagneticField.indexOf(":")+1,string_allowMagneticField.indexOf("/"));
 
     sring_allowOrientationChange=string_serial_buffer.substring(string_serial_buffer.indexOf("allowOrientationChange"));
     sring_allowOrientationChange=sring_allowOrientationChange.substring(sring_allowOrientationChange.indexOf(":")+1,sring_allowOrientationChange.indexOf("/"));
 
     
-    minTemperature=string_minTemperature.toDouble();
-    maxTemperature=string_maxTemperature.toDouble();
-    minHumidity=string_minHumidity.toDouble();
-    maxHumidity=string_maxHumidity.toDouble();
-    minPressure=string_minPressure.toDouble();
-    maxPressure=string_maxPressure.toDouble();
-    if(string_allowMagneticFeild.toInt()>0) allowMagneticFeild = true;
-    else allowMagneticFeild = false;
-    if(sring_allowOrientationChange.toInt()>0) allowOrientationChange=true;
-    else allowOrientationChange=false;
+    bool tempMagneticField=false, tempOrientation=false;
+    if(string_allowMagneticField.toInt()>0) tempMagneticField = true;
+    else tempMagneticField = false;
+    if(sring_allowOrientationChange.toInt()>0) tempOrientation=true;
+    else tempOrientation=false;
+    
+    Threshold threshold(string_minTemperature.toDouble(),string_maxTemperature.toDouble(),string_minHumidity.toDouble(),string_maxHumidity.toDouble(),
+                      string_minPressure.toDouble(), string_maxPressure.toDouble(), tempMagneticField, tempOrientation);
+    return threshold;
     
 
-    Serial.print("NEW THRESHOLD DETECTED: "+ string_minTemperature+" "+string_maxTemperature+" "+string_minHumidity+" "+string_maxHumidity+" "+string_minPressure+" "+
-    string_maxPressure+" "+string_allowMagneticFeild+" "+sring_allowOrientationChange+'\n');
-    return;
+    //Serial.print("NEW THRESHOLD DETECTED: "+ string_minTemperature+" "+string_maxTemperature+" "+string_minHumidity+" "+string_maxHumidity+" "+string_minPressure+" "+
+    //string_maxPressure+" "+string_allowMagneticField+" "+sring_allowOrientationChange+'\n');
+    //return;
   }
 }
 
-void send_JSON_data(){
-  sendCommandToA9G("AT+MQTTPUB=\"IEDA_test\",\""+to_json()+"\",0,0,0",3,"OK");         
+void send_JSON_data(SensorData sensorData){
+  sendCommandToA9G("AT+MQTTPUB=\"IEDA_test\",\""+sensorData.to_json()+"\",0,0,0",3,"OK");         
 }
 
 void turn_off_A9G(){

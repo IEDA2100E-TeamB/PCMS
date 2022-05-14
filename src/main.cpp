@@ -79,6 +79,7 @@ void loop()
 
 
 	// -------- GPS MODULE ----------
+	SensorData test(0,0,0,0,0,0,"test","test");
 	if(disconnected_gateway==true){
     //when disconnected from gateway turn on A9G
     	if(A9G_state==false){
@@ -90,7 +91,7 @@ void loop()
     	else{
       		get_GPS_data();
       		//Serial.println();
-      		send_JSON_data();
+      		send_JSON_data(test); //NEED SENSOR DATA PASSED
 	  		check_new_threshold();
       		delay(1000);
     	}
