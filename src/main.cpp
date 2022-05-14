@@ -1,25 +1,31 @@
 #include <Arduino.h>
 #include "test_board.h"
 
-// -------- INCLUDES --------
-// -------- SENSOR SYSTEM --------
+// ======== INCLUDES ========
+// ======== SENSOR SYSTEM ========
 #include "i2c_scanner.h"
-#include "peripheral_bme280.h"
-#include "peripheral_mpu6050.h"
-// ------- GPS MODULE --------
+#include "i2c_bme280.h"
+#include "i2c_mpu6050.h"
+#include "adc_light.h"
+#include "gpio_hall.h"
+#include "gpio_active_buzzer.h"
+// ======== GPS MODULE ========
 #include "PCMS_GPS_GPRS.hpp"
-// ------- GATEWAY --------
+// ======== GATEWAY ========
 #include <WiFi.h>
 #include "socket_conn.hpp"
 #include "sensor_data.hpp"
 #include "unix_time.hpp"
 
-// -------- DEFINES --------
+// ======== DEFINES ========
 // please write down the pins used in ascending order:
+#define ADC_LIGHT_SENSOR 4
+#define DIN_HALL_SENSOR 12
+#define DOU_ACTIVE_BUZZER 18
 #define I2C_SDA 21
 #define I2C_SCL 22
 
-// -------- VARIABLES --------
+// ======== VARIABLES ========
 bool A9G_state = false, disconnected_gateway = true;
 String GPS_data = "";
 
@@ -27,7 +33,7 @@ bool isWiFiInitSuccess = false;
 bool isSocketConnectSuccess = false;
 bool isTimeSyncSuccess = false;
 
-// -------- FUNCTION PROTOTYPES --------
+// ======== FUNCTION PROTOTYPES ========
 
 void setup()
 {
@@ -35,16 +41,16 @@ void setup()
 	Serial.begin(115200);
 	Serial2.begin(115200);
 
-
-	// -------- SENSOR SYSTEM --------
+	// ======== SENSOR SYSTEM ========
 	// i2cScannerSetup();
 	bme280_setup();
 	mpu6050_setup();
+	my_aBuzzer_init();
 
-	// -------- GPS MODULE ---------
+	// ======== GPS MODULE ========-
 	sendCommandToA9G("AT", 5, "OK");
-  
-  // -------- GATEWAY --------
+
+	// ======== GATEWAY ========
 	isWiFiInitSuccess = wifi_init();
 	if (!isWiFiInitSuccess) {
 		return;
@@ -58,18 +64,20 @@ void setup()
 
 void loop()
 {
-	// -------- TEST BOARD start --------
+	// ======== TEST BOARD start ========
 	// led_blinkWithoutDelay();
-	// -------- TEST BOARD end --------
+	// ======== TEST BOARD end ========
 
 	// put your main code here, to run repeatedly:
 
-	// -------- SENSOR SYSTEM --------
+	// ======== SENSOR SYSTEM ========
 	// i2cScannerLoop();
 	bme280_print();
 	mpu6050_print();
+	my_light_print();
+	// my_aBuzzer_alarm();
 
-	// -------- GPS MODULE ----------
+	// ======== GPS MODULE ========--
 	if (disconnected_gateway == true) {
 		//when A9G off
 		if (A9G_state == false) {
@@ -102,10 +110,9 @@ void loop()
 	}
 	Serial.println();
 	delay(1000);
-  
-  // -------- GATEWAY --------
-	if (!isSocketConnectSuccess)
-	{
+
+	// ======== GATEWAY ========
+	if (!isSocketConnectSuccess) {
 		return;
 	}
 	SensorData sensorData(1.1, 1.1, 1.1, 1.1, 1.1, 1.1, String("test"), String(get_time()));

@@ -1,4 +1,4 @@
-#include "peripheral_bme280.h"
+#include "i2c_bme280.h"
 
 #define BME280_ADDR 0x76
 #define SEALEVELPRESSURE_HPA (1013.25)
