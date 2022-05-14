@@ -4,6 +4,7 @@
 
 #include <ArduinoJSON.h>
 
+
 void sendCommandToA9G(String command, int maxTime, const char readReplay[]);
 void ShowSerialData();
 void turnOff_A9G();
