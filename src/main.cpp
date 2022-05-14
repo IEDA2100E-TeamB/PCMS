@@ -4,9 +4,8 @@
 // -------- INCLUDES --------
 // -------- SENSOR SYSTEM --------
 #include "i2c_scanner.h"
-#include "peripheral_bme280.h"
-#include "peripheral_mpu6050.h"
-
+#include "i2c_bme280.h"
+#include "i2c_mpu6050.h"
 // ------- GPS MODULE --------
 #include "PCMS_GPS_GPRS.hpp"
 
@@ -18,6 +17,7 @@
 // -------- VARIABLES --------
 bool A9G_state = false, disconnected_gateway = true;
 String GPS_data = "";
+
 // -------- FUNCTION PROTOTYPES --------
 
 void setup()
@@ -32,7 +32,6 @@ void setup()
 	// put your setup code here, to run once:
 	Serial.begin(115200);
 	Serial2.begin(115200);
-
 
 	// -------- SENSOR SYSTEM --------
 	// i2cScannerSetup();

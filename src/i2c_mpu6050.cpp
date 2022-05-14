@@ -1,4 +1,4 @@
-#include "peripheral_mpu6050.h"
+#include "i2c_mpu6050.h"
 
 #define MPU6050_ADDR 0x68
 
