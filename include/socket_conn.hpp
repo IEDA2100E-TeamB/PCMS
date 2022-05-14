@@ -7,7 +7,8 @@
 extern WiFiClient wifiClient;
 
 typedef enum {
-	MSG_SENSOR_DATA,
+	MSG_SENSOR_DATA_BASIC,
+	MSG_SENSOR_DATA_PREMIUM,
 } MessageType;
 
 bool wifi_init(void);

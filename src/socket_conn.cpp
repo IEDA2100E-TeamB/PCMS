@@ -79,7 +79,7 @@ bool socket_send_sensor_data(SensorData *sensorData)
 	}
 	String json = "{";
 	json += "\"parcel_id\":\"" + String(parcelID) + "\",";
-	json += "\"message_type\":" + String(MSG_SENSOR_DATA) + ",";
+	json += "\"message_type\":" + String(MSG_SENSOR_DATA_BASIC) + ",";
 	json += "\"timestamp\":" + String(get_time()) + ",";
 	json += "\"body\":";
 	json += sensorData->to_json();
