@@ -1,0 +1,14 @@
+{
+    "parcel_id": "ASDAF",
+    "message_type": 0,
+    "timestamp": 1652464967,
+    "body": {
+        "temperature": 1.10,
+        "humidity": 1.10,
+        "pressure": 1.10,
+        "magneticField": 1.10,
+        "orientation": "1.10:1.10",
+        "gpsLocation": "test",
+        "checkTime": "1652464967"
+    }
+}

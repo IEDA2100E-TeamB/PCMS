@@ -1,4 +1,4 @@
-#include "peripheral_mpu6050.h"
+#include "i2c_mpu6050.h"
 
 #define MPU6050_ADDR 0x68
 
@@ -113,9 +113,10 @@ void mpu6050_print()
 		Serial.print(eventGyro.gyro.z);
 		Serial.println();
 
-		Serial.print("Temperature (*C): ");
-		Serial.print(eventTemperature.temperature);
-		Serial.println();
+		// not using this
+		// Serial.print("Temperature (*C): ");
+		// Serial.print(eventTemperature.temperature);
+		// Serial.println();
 
 		Serial.println();
 		prevMillis = currMillis;
