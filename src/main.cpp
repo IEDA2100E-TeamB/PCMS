@@ -6,9 +6,13 @@
 #include "i2c_scanner.h"
 #include "peripheral_bme280.h"
 #include "peripheral_mpu6050.h"
-
 // ------- GPS MODULE --------
 #include "PCMS_GPS_GPRS.hpp"
+// ------- GATEWAY --------
+#include <WiFi.h>
+#include "socket_conn.hpp"
+#include "sensor_data.hpp"
+#include "unix_time.hpp"
 
 // -------- DEFINES --------
 // please write down the pins used in ascending order:
@@ -18,17 +22,15 @@
 // -------- VARIABLES --------
 bool A9G_state = false, disconnected_gateway = true;
 String GPS_data = "";
+
+bool isWiFiInitSuccess = false;
+bool isSocketConnectSuccess = false;
+bool isTimeSyncSuccess = false;
+
 // -------- FUNCTION PROTOTYPES --------
 
 void setup()
 {
-	// -------- TEST BOARD start --------
-	// pinMode(LED_BUILTIN, OUTPUT);
-	// Serial.begin(115200);
-	// Serial.println("serial setup done!");
-	// printASCII();
-	// -------- TEST BOARD end --------
-
 	// put your setup code here, to run once:
 	Serial.begin(115200);
 	Serial2.begin(115200);
@@ -41,6 +43,17 @@ void setup()
 
 	// -------- GPS MODULE ---------
 	sendCommandToA9G("AT", 5, "OK");
+  
+  // -------- GATEWAY --------
+	isWiFiInitSuccess = wifi_init();
+	if (!isWiFiInitSuccess) {
+		return;
+	}
+	isTimeSyncSuccess = sync_time();
+	if (!isTimeSyncSuccess) {
+		return;
+	}
+	isSocketConnectSuccess = socket_connect();
 }
 
 void loop()
@@ -89,4 +102,13 @@ void loop()
 	}
 	Serial.println();
 	delay(1000);
+  
+  // -------- GATEWAY --------
+	if (!isSocketConnectSuccess)
+	{
+		return;
+	}
+	SensorData sensorData(1.1, 1.1, 1.1, 1.1, 1.1, 1.1, String("test"), String(get_time()));
+	socket_send_sensor_data(&sensorData);
+	delay(10000);
 }

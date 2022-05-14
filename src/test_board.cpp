@@ -49,9 +49,9 @@ void testLoop()
 void led_blink(void)
 {
 	// blink for 10 seconds
-	digitalWrite(LED_BUILTIN, HIGH); // turn the LED on (HIGH is the voltage level)
+	// digitalWrite(LED_BUILTIN, HIGH); // turn the LED on (HIGH is the voltage level)
 	delay(1000); // wait for a second
-	digitalWrite(LED_BUILTIN, LOW); // turn the LED off by making the voltage LOW
+	// digitalWrite(LED_BUILTIN, LOW); // turn the LED off by making the voltage LOW
 	delay(1000); // wait for a second
 }
 
@@ -70,7 +70,7 @@ void led_blinkWithoutDelay(void)
 			ledState = LOW;
 		}
 		// set the LED with the ledState of the variable:
-		digitalWrite(LED_BUILTIN, ledState);
+		// digitalWrite(LED_BUILTIN, ledState);
 		// save the last time you blinked the LED
 		prevMillis = currMillis;
 	}
