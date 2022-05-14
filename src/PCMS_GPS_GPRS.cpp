@@ -55,8 +55,9 @@ void start_GPS(){
 }
 
 void get_GPS_data(){
-    sendCommandToA9G("AT+LOCATION=2");
-    ShowSerialData();
+    sendCommandToA9G("AT+LOCATION=2",3,"OK");
+    if(found) ShowSerialData();
+    else Serial.write("UNABLE TO LOCATE");
 }
 
 void terminate_GPS(){
@@ -73,11 +74,11 @@ void terminate_GPS(){
 void connect_mqqt_broker(){
     sendCommandToA9G("AT+CGDCONT=1,\"IP\",\"pccw\"", 3, "OK");    
     sendCommandToA9G("AT+CGACT=1,1", 5, "OK");
-    sendCommandToA9G("AT+MQTTCONN=\"broker.mqttdashboard.com\",1883,\"testclient\",120,0", 5, "OK");
+    sendCommandToA9G("AT+MQTTCONN=\"broker.hivemq.com\",1883,\"PCMS\",120,0", 5, "OK");
 }
 
 void send_JSON_data(){
-  sendCommandToA9G("AT+MQTTPUB=\"Test1\",\"JSON DATA\",0,0,0",5,"OK");         
+  sendCommandToA9G("AT+MQTTPUB=IEDA_test\",\""+ +"\",0,0,0",5,"OK");         
 }
 
 void terminate_broker_connection(){
