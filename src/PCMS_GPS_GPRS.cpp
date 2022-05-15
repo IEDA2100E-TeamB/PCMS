@@ -8,8 +8,8 @@
 
 int countTrueCommand=0;
 int countTimeCommand=0;
-bool found = false;
-String saved_serial_buffer="",gpsLocation="";
+bool found = false, connect = false;
+String saved_serial_buffer="", gpsLocation="NULL";
 
 void sendCommandToA9G(String command, int maxTime, const char readReplay[]) {
   Serial.print(countTrueCommand);
@@ -31,6 +31,7 @@ void sendCommandToA9G(String command, int maxTime, const char readReplay[]) {
   if (found == true)
   {
     Serial.println("Success");
+    connect = true;
     countTrueCommand++;
     countTimeCommand = 0;
   }
@@ -38,6 +39,7 @@ void sendCommandToA9G(String command, int maxTime, const char readReplay[]) {
   if (found == false)
   {
     Serial.println("Fail");
+    connect = false;
     countTrueCommand = 0;
     countTimeCommand = 0;
   }
@@ -68,10 +70,13 @@ void get_GPS_data(){
     Serial.print(serial_buffer+'\n');
     if(serial_buffer.indexOf("minTemperature")>-1) saved_serial_buffer=serial_buffer.substring(serial_buffer.indexOf("minTemperature"));
     if(serial_buffer.indexOf(".")>-1){
-      gpsLocation=serial_buffer.substring(serial_buffer.indexOf(".")-2,serial_buffer.indexOf(".")+17);
+      gpsLocation=serial_buffer.substring(serial_buffer.indexOf(".")-2,serial_buffer.indexOf(".")+18);
       Serial.print(gpsLocation+'\n');
     }
-    else Serial.write("UNABLE TO LOCATE");
+    else{
+      gpsLocation="NULL";
+      Serial.write("UNABLE TO LOCATE");
+    }
     
 }
 
@@ -79,16 +84,16 @@ void get_GPS_data(){
 //-------------------------GPRS---------------------------
 bool connect_mqqt_broker(){
     sendCommandToA9G("AT+CGDCONT=1,\"IP\",\"pccw\"", 3, "OK");
-    if(found==true) sendCommandToA9G("AT+CGACT=1,1", 3, "OK");
+    if(connect==true) sendCommandToA9G("AT+CGACT=1,1", 3, "OK");
     else return false;
 
-    if(found==true) sendCommandToA9G("AT+MQTTCONN=\"broker.hivemq.com\",1883,\"PCMS\",120,0", 5, "OK");
+    if(connect==true) sendCommandToA9G("AT+MQTTCONN=\"broker.hivemq.com\",1883,\"PCMS\",120,0", 5, "OK");
     else return false;
 
-    if(found==true) sendCommandToA9G("AT+MQTTSUB=\"IEDA_test\",1,0", 3, "OK");
+    if(connect==true) sendCommandToA9G("AT+MQTTSUB=\"IEDA_test\",1,0", 3, "OK");
     else return false;
     
-    if(found==true) return true;
+    if(connect==true) return true;
     else return false;
 }
 
@@ -186,7 +191,7 @@ void check_new_threshold(){
 }
 
 void send_JSON_data(SensorData sensorData){
-  sendCommandToA9G("AT+MQTTPUB=\"IEDA_test\",\""+sensorData.to_json()+"\",0,0,0",3,"OK");         
+  sendCommandToA9G("AT+MQTTPUB=\"IEDA_test\",\""+sensorData.to_json()+"\"gps_location\":\"" + String(gpsLocation) + "}\",0,0,0",3,"OK");         
 }
 
 void turn_off_A9G(){

@@ -68,9 +68,9 @@ String SensorData::to_json(void)
 	json += "\"magneticFeild\":" + String(this->magneticFeild) + ",";
 	json += "\"orientation\":" + String(this->orientation) + ",";
 	json += "\"opened\":" + String(this->opened) + ",";
-	json += "\"gps_location\":\"" + String(this->gpsLocation) + "\",";
+	//json += "\"gps_location\":\"" + String(this->gpsLocation) + "\",";
 	json += "\"check_time\":\"" + String(this->checkTime) + "\"";
-	json += "}";
+	//json += "}";
 	return json;
 }
 
