@@ -1,3 +1,5 @@
+#include <Arduino.h>
+#include <Adafruit_MPU6050.h>
 #include "i2c_mpu6050.h"
 
 #define MPU6050_ADDR 0x68
@@ -9,13 +11,14 @@ static Adafruit_Sensor *mpu6050T;
 static uint32_t prevMillis = 0;
 static constexpr uint32_t MEASURE_DELAY = 1000;
 
-void mpu6050_setup()
+bool mpu6050_setup()
 {
 	if (!mpu6050.begin(MPU6050_ADDR, &Wire)) {
 		Serial.println("Could not find a valid MPU6050 sensor, check wiring!");
 		// TODO generate software interupt
-		while (1)
-			;
+		// while (1)
+		// 	;
+		return false;
 	}
 
 	mpu6050A = mpu6050.getAccelerometerSensor();
@@ -25,9 +28,11 @@ void mpu6050_setup()
 	mpu6050A->printSensorDetails();
 	mpu6050G->printSensorDetails();
 	mpu6050T->printSensorDetails();
+
+	return true;
 }
 
-sensors_vec_t mpu6050_getAcceleration()
+static sensors_vec_t mpu6050_getAcceleration()
 {
 	sensors_event_t eventAcceleration;
 	mpu6050A->getEvent(&eventAcceleration);
@@ -53,7 +58,7 @@ float mpu6050_getAcceleration_z()
 	return eventAcceleration.acceleration.z;
 }
 
-sensors_vec_t mpu6050_getGyro()
+static sensors_vec_t mpu6050_getGyro()
 {
 	sensors_event_t eventGyro;
 	mpu6050G->getEvent(&eventGyro);

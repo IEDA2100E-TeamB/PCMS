@@ -1,23 +1,27 @@
+#include <Arduino.h>
+// #include "main.h"
 #include "gpio_hall.h"
 
 void my_hall_init()
 {
-	pinMode(12, INPUT_PULLDOWN);
+	// pinMode(PIN_GPIO_HALL_SENSOR, INPUT_PULLDOWN);
+	pinMode(15, INPUT_PULLDOWN);
 }
 
 bool my_hall_getData()
 {
-	if (digitalRead(12) == HIGH) {
+	// if (digitalRead(PIN_GPIO_HALL_SENSOR) == HIGH) {
+	if (digitalRead(15) == HIGH) {
 		return true;
 	} else {
 		return false;
 	}
 }
 
-void my_hall_interrupt_init(){
-
+void my_hall_interrupt_init()
+{
 }
 
-void my_hall_interrupt()
+void my_hall_isr()
 {
 }

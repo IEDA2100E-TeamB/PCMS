@@ -1,16 +1,10 @@
-#ifndef PCMS_GPS_GPRS
-#define PCMS_GPS_GPRS
-
 #include <PCMS_GPS_GPRS.hpp>
-#include <sensor_data.hpp>
-#include <threshold.hpp>
 
 int countTrueCommand=0;
 int countTimeCommand=0;
-bool found = false;
-String saved_serial_buffer="",gpsLocation="";
-extern String GPS_data;
-
+bool found = false, connect = false;
+String saved_serial_buffer="", gpsLocation="NULL";
+extern Threshold currThreshold;
 
 void sendCommandToA9G(String command, int maxTime, const char readReplay[]) {
   Serial.print(countTrueCommand);
@@ -32,6 +26,7 @@ void sendCommandToA9G(String command, int maxTime, const char readReplay[]) {
   if (found == true)
   {
     Serial.println("Success");
+    connect = true;
     countTrueCommand++;
     countTimeCommand = 0;
   }
@@ -39,6 +34,7 @@ void sendCommandToA9G(String command, int maxTime, const char readReplay[]) {
   if (found == false)
   {
     Serial.println("Fail");
+    connect = false;
     countTrueCommand = 0;
     countTimeCommand = 0;
   }
@@ -69,23 +65,34 @@ void get_GPS_data(){
     Serial.print(serial_buffer+'\n');
     if(serial_buffer.indexOf("minTemperature")>-1) saved_serial_buffer=serial_buffer.substring(serial_buffer.indexOf("minTemperature"));
     if(serial_buffer.indexOf(".")>-1){
-      gpsLocation=serial_buffer.substring(serial_buffer.indexOf(".")-2,serial_buffer.indexOf(".")+17);
+      gpsLocation=serial_buffer.substring(serial_buffer.indexOf(".")-2,serial_buffer.indexOf(".")+18);
       Serial.print(gpsLocation+'\n');
     }
-    else Serial.write("UNABLE TO LOCATE");
+    else{
+      gpsLocation="NULL";
+      Serial.write("UNABLE TO LOCATE");
+    }
     
 }
 
 
 //-------------------------GPRS---------------------------
-void connect_mqqt_broker(){
-    sendCommandToA9G("AT+CGDCONT=1,\"IP\",\"pccw\"", 3, "OK");    
-    sendCommandToA9G("AT+CGACT=1,1", 3, "OK");
-    sendCommandToA9G("AT+MQTTCONN=\"broker.hivemq.com\",1883,\"PCMS\",120,0", 5, "OK");
-    sendCommandToA9G("AT+MQTTSUB=\"IEDA_test\",1,0", 3, "OK");
+bool connect_mqqt_broker(){
+    sendCommandToA9G("AT+CGDCONT=1,\"IP\",\"pccw\"", 3, "OK");
+    if(connect==true) sendCommandToA9G("AT+CGACT=1,1", 3, "OK");
+    else return false;
+
+    if(connect==true) sendCommandToA9G("AT+MQTTCONN=\"broker.hivemq.com\",1883,\"PCMS\",120,0", 5, "OK");
+    else return false;
+
+    if(connect==true) sendCommandToA9G("AT+MQTTSUB=\"IEDA_test\",1,0", 3, "OK");
+    else return false;
+    
+    if(connect==true) return true;
+    else return false;
 }
 
-Threshold check_new_threshold(){
+void check_new_threshold(){
   String serial_buffer="", string_serial_buffer="";
   String string_minTemperature="", string_maxTemperature="", string_minHumidity="", string_maxHumidity="";
   String string_minPressure="", string_maxPressure="", string_allowMagneticField="", sring_allowOrientationChange="";
@@ -124,11 +131,9 @@ Threshold check_new_threshold(){
     else tempMagneticField = false;
     if(sring_allowOrientationChange.toInt()>0) tempOrientation=true;
     else tempOrientation=false;
-    Threshold threshold(string_minTemperature.toDouble(),string_maxTemperature.toDouble(),string_minHumidity.toDouble(),string_maxHumidity.toDouble(),
+
+    currThreshold.update(string_minTemperature.toDouble(),string_maxTemperature.toDouble(),string_minHumidity.toDouble(),string_maxHumidity.toDouble(),
                       string_minPressure.toDouble(), string_maxPressure.toDouble(), tempMagneticField, tempOrientation);
-    return threshold;
-    
-    
 
     //Serial.print("NEW THRESHOLD DETECTED: "+ string_minTemperature+" "+string_maxTemperature+" "+string_minHumidity+" "+string_maxHumidity+" "+string_minPressure+" "+
     //string_maxPressure+" "+string_allowMagneticField+" "+sring_allowOrientationChange+'\n');
@@ -170,9 +175,8 @@ Threshold check_new_threshold(){
     if(sring_allowOrientationChange.toInt()>0) tempOrientation=true;
     else tempOrientation=false;
     
-    Threshold threshold(string_minTemperature.toDouble(),string_maxTemperature.toDouble(),string_minHumidity.toDouble(),string_maxHumidity.toDouble(),
+    currThreshold.update(string_minTemperature.toDouble(),string_maxTemperature.toDouble(),string_minHumidity.toDouble(),string_maxHumidity.toDouble(),
                       string_minPressure.toDouble(), string_maxPressure.toDouble(), tempMagneticField, tempOrientation);
-    return threshold;
     
 
     //Serial.print("NEW THRESHOLD DETECTED: "+ string_minTemperature+" "+string_maxTemperature+" "+string_minHumidity+" "+string_maxHumidity+" "+string_minPressure+" "+
@@ -182,13 +186,9 @@ Threshold check_new_threshold(){
 }
 
 void send_JSON_data(SensorData sensorData){
-  sendCommandToA9G("AT+MQTTPUB=\"IEDA_test\",\""+sensorData.to_json()+"\",0,0,0",3,"OK");         
+  sendCommandToA9G("AT+MQTTPUB=\"IEDA_test\",\""+sensorData.to_json()+"\"gps_location\":\"" + String(gpsLocation) + "}\",0,0,0",3,"OK");         
 }
 
 void turn_off_A9G(){
   Serial2.println("AT+RST=2");
 }
-
-
-
-#endif

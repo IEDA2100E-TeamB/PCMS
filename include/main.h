@@ -2,6 +2,7 @@
 #define MY_MAIN_H
 
 #include <Arduino.h>
+// #include <atomic>
 #include "threshold.hpp"
 #include "sensor_data.hpp"
 
@@ -19,6 +20,7 @@ typedef enum {
 	A9G_RETRY,
 } system_status;
 #define DATA_BUFF_LENGTH 20
+#define TIMEOUT_TIME 600000
 
 // ======== PIN USED ========
 // debugging
@@ -37,13 +39,18 @@ static const uint8_t SERIAL2_TX = 17;
 
 // ======== VARIABLES ========
 // system status
-system_status currentStatus = DISCONNECT;
-system_status previousStatus = DISCONNECT;
+// std::atomic<system_status> currentStatus{ WAREHOUSE_WIFI_CONNECTING };
+// std::atomic<system_status> previousStatus{ WAREHOUSE_WIFI_CONNECTING };
+volatile system_status currentStatus{ WAREHOUSE_WIFI_CONNECTING };
+volatile system_status previousStatus{ WAREHOUSE_WIFI_CONNECTING };
 // sensor
 SensorData dataBuffer[DATA_BUFF_LENGTH];
 uint8_t idx_currRead = 0;
 uint8_t idx_currWrite = 0;
 Threshold currThreshold{ -10, 50, 20, 90, 850, 1100, true, true };
+static uint32_t sensorData_prevMillis = 0;
+static uint32_t sensorData_currMillis = 0;
+static uint32_t sensorData_delay = 5000;
 static uint32_t bme280_prevMillis = 0;
 static uint32_t bme280_currMillis = 0;
 static uint32_t bme280_delay = 5000;
@@ -64,6 +71,7 @@ static bool isWiFiInitSuccess = false;
 static bool isSocketConnectSuccess = false;
 static bool isTimeSyncSuccess = false;
 // server communication
-static bool A9G_state = false;
+uint32_t disconnect_prevMillis = 0;
+uint32_t disconnect_currMillis = 0;
 
 #endif
