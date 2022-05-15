@@ -88,3 +88,22 @@ bool socket_send_sensor_data(SensorData *sensorData)
 	client.println(json);
 	return true;
 }
+
+bool socket_send_alarm_message(bool isAlarming)
+{
+	if (!client.connected()) {
+		if (!socket_connect()) {
+			return false;
+		}
+	}
+	String json = "{";
+	json += "\"parcel_id\":\"" + String(parcelID) + "\",";
+	json += "\"message_type\":" + String(MSG_ALARM) + ",";
+	json += "\"timestamp\":" + String(get_time()) + ",";
+	json += "\"body\":";
+	json += "{\"is_alarming\":" + String(isAlarming) + "}";
+	json += "}";
+	Serial.println(json);
+	client.println(json);
+	return true;
+}
