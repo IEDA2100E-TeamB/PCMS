@@ -11,6 +11,7 @@ float mpu6050_getGyro_x();
 float mpu6050_getGyro_y();
 float mpu6050_getGyro_z();
 float mpu6050_getTemperature();
+bool mpu6050_getOrientation();
 void mpu6050_print();
 
 #endif

@@ -48,6 +48,7 @@ SensorData dataBuffer[DATA_BUFF_LENGTH];
 uint8_t idx_currRead = 0;
 uint8_t idx_currWrite = 0;
 Threshold currThreshold{ -10, 50, 20, 90, 850, 1100, true, true };
+bool sensors_isInitted = false;
 static uint32_t sensorData_prevMillis = 0;
 static uint32_t sensorData_currMillis = 0;
 static uint32_t sensorData_delay = 5000;

@@ -24,3 +24,12 @@ uint16_t my_light_getData()
 	// return analogRead(PIN_ADC_LIGHT_SENSOR);
 	return analogRead(4);
 }
+
+bool my_light_getOpened()
+{
+	if (my_light_getData() < 3600) {
+		return true;
+	} else {
+		return false;
+	}
+}
