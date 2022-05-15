@@ -6,7 +6,6 @@
 // #include "soc/soc.h"
 // #include "soc/rtc_cntl_reg.h"
 // sensor
-#include "sensor_data.hpp"
 #include "i2c_scanner.h"
 #include "i2c_bme280.h"
 #include "i2c_mpu6050.h"
@@ -14,7 +13,6 @@
 #include "gpio_hall.h"
 #include "gpio_active_buzzer.h"
 // gateway communication
-#include <WiFi.h>
 #include "socket_conn.hpp"
 #include "unix_time.hpp"
 // server communication
