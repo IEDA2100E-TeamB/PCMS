@@ -18,85 +18,52 @@
 // #include "soc/rtc_cntl_reg.h"
 #include "PCMS_GPS_GPRS.hpp"
 
+// ======== FUNCTION PROTOTYPES ========
+void sensor_task(void *pvParameters);
+void sensor_pollForStatus();
+void gatewayCommunication_task(void *pvParameters);
+void serverCommunication_task(void *pvParameters);
+
 void setup()
 {
 	// put your setup code here, to run once:
 	Serial.begin(115200);
 
+	// ======== sensor VOUT init ========
+	pinMode(SENSOR_VOLTAGE, OUTPUT);
+	digitalWrite(SENSOR_VOLTAGE, LOW);
+
 	// ======== gateway communication init ========
 	// !!! we init this part first
-	// if (wifi_init() != true) {
-	// 	return;
-	// }
-	// if (sync_time() != true) {
-	// 	return;
-	// }
-	// if (socket_connect() != true) {
-	// 	return;
-	// }
-
-	// ======== local system init ========
-	// i2cScannerSetup();
-	bme280_setup();
-	mpu6050_setup();
-	my_aBuzzer_init();
+	if (wifi_init() != true) {
+		return;
+	}
+	if (sync_time() != true) {
+		return;
+	}
+	if (socket_connect() != true) {
+		return;
+	}
 
 	// ======== server communication init ========
 	// !!! we skip server communication init and ONLY init it when neccesary
 	Serial2.begin(115200);
-	sendCommandToA9G("AT", 5, "OK");
+	// sendCommandToA9G("AT", 5, "OK");
 
-	// ======== threads init ========
-	static TaskHandle_t task_system = NULL;
-	static TaskHandle_t task_gatewayCommunication = NULL;
-	static TaskHandle_t task_serverCommunication = NULL;
-	BaseType_t xReturned;
-
-	// ======== local system thread ========
+	// ======== sensor thread init ========
+	static TaskHandle_t Task_Sensor = NULL;
+	BaseType_t xReturned = pdFAIL;
 	//create a task that will be executed in the function, with priority 1 and executed on core 0
-	xReturned = pdFAIL;
-	xReturned = xTaskCreatePinnedToCore(system_task, /* Task function. */
+	xReturned = xTaskCreatePinnedToCore(sensor_task, /* Task function. */
 					    "System", /* name of task. */
 					    10000, /* Stack size of task */
 					    NULL, /* parameter of the task */
 					    1, /* priority of the task */
-					    &task_system, /* Task handle to keep track of created task */
+					    &Task_Sensor, /* Task handle to keep track of created task */
 					    0); /* pin task to core 0 */
 	if (xReturned != pdPASS) {
 		return;
 	}
-	delay(500);
-
-	// ======== gateway communication thread ========
-	//create a task that will be executed in the function, with priority 1 and executed on core 1
-	// xReturned = pdFAIL;
-	// xTaskCreatePinnedToCore(gatewayCommunication_task, /* Task function. */
-	// 			"Gateway Communication", /* name of task. */
-	// 			10000, /* Stack size of task */
-	// 			NULL, /* parameter of the task */
-	// 			1, /* priority of the task */
-	// 			&task_gatewayCommunication, /* Task handle to keep track of created task */
-	// 			1); /* pin task to core 1 */
-	// if (xReturned != pdPASS) {
-	// 	return;
-	// }
-	// delay(500);
-
-	// ======== server communication thread ========
-	// !!! not creating it now
-	// create a task that will be executed in the function, with priority 1 and executed on core 1
-	xReturned = pdFAIL;
-	xReturned = xTaskCreatePinnedToCore(serverCommunication_task, /* Task function. */
-					    "Task2", /* name of task. */
-					    10000, /* Stack size of task */
-					    NULL, /* parameter of the task */
-					    1, /* priority of the task */
-					    &task_serverCommunication, /* Task handle to keep track of created task */
-					    1); /* pin task to core 1 */
-	if (xReturned != pdPASS) {
-		return;
-	}
-	delay(500);
 }
 
 void loop()
@@ -108,9 +75,42 @@ void loop()
 	// put your main code here, to run repeatedly:
 	// Serial.println("this is loop()");
 	// delay(1000);
+
+	// !!! loop() is for both gateway and server communication
+	if (currentStatus == DISCONNECT) {
+		// ======== gateway communication ========
+		// ======== server communication ========
+	} else if (currentStatus == WAREHOUSE_WIFI_CONNECTING) {
+		// ======== gateway communication ========
+		// ======== server communication ========
+	} else if (currentStatus == WAREHOUSE_WIFI_CONNECTED) {
+		// ======== gateway communication ========
+		// ======== server communication ========
+	} else if (currentStatus == WAREHOUSE_WIFI_RETRY) {
+		// ======== gateway communication ========
+		// ======== server communication ========
+	} else if (currentStatus == TRUCK_WIFI_CONNECTING) {
+		// ======== gateway communication ========
+		// ======== server communication ========
+	} else if (currentStatus == TRUCK_WIFI_CONNECTED) {
+		// ======== gateway communication ========
+		// ======== server communication ========
+	} else if (currentStatus == TRUCK_WIFI_RETRY) {
+		// ======== gateway communication ========
+		// ======== server communication ========
+	} else if (currentStatus == A9G_CONNECTING) {
+		// ======== gateway communication ========
+		// ======== server communication ========
+	} else if (currentStatus == A9G_CONNECTED) {
+		// ======== gateway communication ========
+		// ======== server communication ========
+	} else if (currentStatus == A9G_RETRY) {
+		// ======== gateway communication ========
+		// ======== server communication ========
+	}
 }
 
-void system_task(void *pvParameters)
+void sensor_task(void *pvParameters)
 {
 	for (;;) {
 		// --Task application code here.--
@@ -119,6 +119,8 @@ void system_task(void *pvParameters)
 		mpu6050_print();
 		my_light_print();
 		// my_aBuzzer_alarm();
+
+		sensor_pollForStatus();
 	}
 
 	/* Tasks must not attempt to return from their implementing
@@ -128,6 +130,71 @@ void system_task(void *pvParameters)
         exit then have the task call vTaskDelete( NULL ) to ensure
         its exit is clean. */
 	vTaskDelete(NULL);
+}
+
+void sensor_pollForStatus()
+{
+	if (currentStatus == DISCONNECT) {
+		if ((previousStatus == TRUCK_WIFI_CONNECTED) || (previousStatus == A9G_CONNECTED)) {
+			// turn off the sensor
+		}
+
+	} else if (currentStatus == WAREHOUSE_WIFI_CONNECTING) {
+		if ((previousStatus == TRUCK_WIFI_CONNECTED) || (previousStatus == A9G_CONNECTED)) {
+			// turn off the sensor
+		}
+
+	} else if (currentStatus == WAREHOUSE_WIFI_CONNECTED) {
+		/* code */
+		if ((previousStatus == TRUCK_WIFI_CONNECTED) || (previousStatus == A9G_CONNECTED)) {
+			// turn off the sensor
+		}
+
+	} else if (currentStatus == WAREHOUSE_WIFI_RETRY) {
+		if ((previousStatus == TRUCK_WIFI_CONNECTED) || (previousStatus == A9G_CONNECTED)) {
+			// turn off the sensor
+		}
+
+	} else if (currentStatus == TRUCK_WIFI_CONNECTING) {
+		if ((previousStatus == TRUCK_WIFI_CONNECTED) || (previousStatus == A9G_CONNECTED)) {
+			// turn off the sensor
+		}
+
+	} else if (currentStatus == TRUCK_WIFI_CONNECTED) {
+		if ((previousStatus != TRUCK_WIFI_CONNECTED) || previousStatus != A9G_CONNECTED) {
+			// !!! sensor init
+			// i2cScannerSetup();
+			bme280_setup();
+			mpu6050_setup();
+			my_aBuzzer_init();
+		}
+
+	} else if (currentStatus == TRUCK_WIFI_RETRY) {
+		if ((previousStatus == TRUCK_WIFI_CONNECTED) || (previousStatus == A9G_CONNECTED)) {
+			// turn off the sensor
+		}
+
+	} else if (currentStatus == A9G_CONNECTING) {
+		/* code */
+		if ((previousStatus == TRUCK_WIFI_CONNECTED) || (previousStatus == A9G_CONNECTED)) {
+			// turn off the sensor
+		}
+
+	} else if (currentStatus == A9G_CONNECTED) {
+		if ((previousStatus != TRUCK_WIFI_CONNECTED) || previousStatus != A9G_CONNECTED) {
+			// !!! sensor init
+			// i2cScannerSetup();
+			bme280_setup();
+			mpu6050_setup();
+			my_aBuzzer_init();
+		}
+
+	} else if (currentStatus == A9G_RETRY) {
+		/* code */
+		if ((previousStatus == TRUCK_WIFI_CONNECTED) || (previousStatus == A9G_CONNECTED)) {
+			// turn off the sensor
+		}
+	}
 }
 
 void gatewayCommunication_task(void *pvParameters)

@@ -17,12 +17,13 @@ typedef enum {
 	A9G_CONNECTING,
 	A9G_CONNECTED,
 	A9G_RETRY,
-} network_status;
+} system_status;
 // ======== PIN USED ========
 // debugging
 static const uint8_t SERIAL0_RX = 3;
 static const uint8_t SERIAL0_TX = 1;
-// local system
+// sensor
+static const uint8_t SENSOR_VOLTAGE = 2;
 static const uint8_t ADC_LIGHT_SENSOR = 4;
 static const uint8_t DIN_HALL_SENSOR = 12;
 static const uint8_t DOU_ACTIVE_BUZZER = 18;
@@ -33,14 +34,14 @@ static const uint8_t SERIAL2_RX = 16;
 static const uint8_t SERIAL2_TX = 17;
 
 // ======== VARIABLES ========
+// system status
+system_status currentStatus = DISCONNECT;
+system_status previousStatus = DISCONNECT;
+// sensor
 SensorData dataBuffer[20];
 uint8_t idx_currRead = 0;
 uint8_t idx_currWrite = 0;
 Threshold currThreshold{ -10, 50, 20, 90, 850, 1100, true, true };
-// network status
-network_status currentStatus = DISCONNECT;
-network_status previousStatus = DISCONNECT;
-// local system
 static uint32_t bme280_prevMillis = 0;
 static uint32_t bme280_currMillis = 0;
 static uint32_t bme280_delay = 5000;
@@ -62,10 +63,5 @@ static bool isSocketConnectSuccess = false;
 static bool isTimeSyncSuccess = false;
 // server communication
 static bool A9G_state = false;
-
-// ======== FUNCTION PROTOTYPES ========
-void system_task(void *pvParameters);
-void gatewayCommunication_task(void *pvParameters);
-void serverCommunication_task(void *pvParameters);
 
 #endif
