@@ -2,6 +2,7 @@
 #define MY_LIGHT_SENSOR_H
 
 #include <Arduino.h>
+#include "main.h"
 
 void my_light_print();
 

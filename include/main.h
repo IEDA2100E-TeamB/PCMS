@@ -19,15 +19,16 @@ typedef enum {
 	A9G_RETRY,
 } system_status;
 #define DATA_BUFF_LENGTH 20
+
 // ======== PIN USED ========
 // debugging
 static const uint8_t SERIAL0_RX = 3;
 static const uint8_t SERIAL0_TX = 1;
 // sensor
-static const uint8_t SENSOR_VOLTAGE = 2;
-static const uint8_t ADC_LIGHT_SENSOR = 4;
-static const uint8_t DIN_HALL_SENSOR = 12;
-static const uint8_t DOU_ACTIVE_BUZZER = 18;
+static const uint8_t PIN_SENSOR_VOLTAGE = 2;
+static const uint8_t PIN_ADC_LIGHT_SENSOR = 4;
+static const uint8_t PIN_GPIO_HALL_SENSOR = 15;
+static const uint8_t PIN_GPIO_ACTIVE_BUZZER = 18;
 static const uint8_t I2C_SDA = 21;
 static const uint8_t I2C_SCL = 22;
 // server communication
