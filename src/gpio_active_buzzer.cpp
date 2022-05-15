@@ -2,6 +2,9 @@
 // #include "main.h"
 #include "gpio_active_buzzer.h"
 
+// ??? why this is undefined
+// extern const uint8_t PIN_GPIO_ACTIVE_BUZZER;
+
 bool triggerAlarm = false;
 
 static bool isAlarming = false;

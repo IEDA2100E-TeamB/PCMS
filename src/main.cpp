@@ -41,7 +41,8 @@ void setup()
 	pinMode(PIN_SENSOR_VOLTAGE, OUTPUT);
 	digitalWrite(PIN_SENSOR_VOLTAGE, LOW);
 
-	// for testing
+	// !!! for testing
+	// digitalWrite(PIN_SENSOR_VOLTAGE, HIGH);
 	// delay(50);
 	// bme280_setup();
 	// mpu6050_setup();
@@ -177,7 +178,7 @@ void sensor_task(void *pvParameters)
 	for (;;) {
 		// --Task application code here.--
 
-		// for testing
+		// !!! for testing
 		// bme280_print();
 		// mpu6050_print();
 		// my_light_print();

@@ -2,6 +2,8 @@
 // #include "main.h"
 #include "adc_light.h"
 
+// extern const uint8_t PIN_ADC_LIGHT_SENSOR;
+
 static uint32_t prevMillis = 0;
 static constexpr uint32_t MEASURE_DELAY = 1000;
 

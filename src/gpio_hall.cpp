@@ -2,6 +2,9 @@
 // #include "main.h"
 #include "gpio_hall.h"
 
+// ??? why this is undefined
+// extern const uint8_t PIN_GPIO_HALL_SENSOR;
+
 void my_hall_init()
 {
 	// pinMode(PIN_GPIO_HALL_SENSOR, INPUT_PULLDOWN);
