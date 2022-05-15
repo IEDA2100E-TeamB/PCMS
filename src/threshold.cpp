@@ -28,7 +28,7 @@ void Threshold::update(double minTemp, double maxTemp, double minHumi, double ma
 	this->allowOrientationChange = allowOriChange;
 }
 
-bool Threshold::check(SensorData *sensorData)
+bool Threshold::check_passed(SensorData *sensorData)
 {
 	if (sensorData->get_temperature() - this->maxTemperature > comparrationInterval) {
 		return false;

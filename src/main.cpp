@@ -21,6 +21,7 @@
 // ======== FUNCTION PROTOTYPES ========
 void sensor_task(void *pvParameters);
 void sensor_pollForStatus(void);
+void sensor_collectData(void);
 void gatewayCommunication_task(void *pvParameters);
 void serverCommunication_task(void *pvParameters);
 
@@ -245,34 +246,11 @@ void sensor_pollForStatus(void)
 		}
 
 	} else if (currentStatus == TRUCK_WIFI_CONNECTED) {
-		if (sensors_isInitted != true) {
-			// !!! sensor init
-			sensors_isInitted = true;
-			digitalWrite(PIN_SENSOR_VOLTAGE, HIGH);
-			delay(10);
-			// i2cScannerSetup();
-			bme280_setup();
-			mpu6050_setup();
-			my_hall_init();
-			my_aBuzzer_init();
-		} else {
-			// we keep updating the data buffer
-			sensorData_currMillis = millis();
-			if (sensorData_currMillis - sensorData_prevMillis >= sensorData_delay) {
-				sensorData_prevMillis = sensorData_currMillis;
+		sensorData_currMillis = millis();
+		if (sensorData_currMillis - sensorData_prevMillis >= sensorData_delay) {
+			sensorData_prevMillis = sensorData_currMillis;
 
-				double temperature = bme280_getTemperature_Celsius();
-				double humidity = bme280_getHumidity();
-				double pressure = bme280_getBaroPressure_hPa();
-				bool magnetic = my_hall_getData();
-				bool orientation = mpu6050_getOrientation;
-				bool opened = my_light_getOpened();
-
-				idx_currWrite = idx_currWrite % DATA_BUFF_LENGTH;
-				dataBuffer[idx_currWrite].update(temperature, humidity, pressure, magnetic, orientation,
-								 opened, "", String(get_time()));
-				idx_currWrite++;
-			}
+			sensor_collectData();
 		}
 
 	} else if (currentStatus == TRUCK_WIFI_RETRY) {
@@ -294,34 +272,11 @@ void sensor_pollForStatus(void)
 		}
 
 	} else if (currentStatus == A9G_CONNECTED) {
-		if (sensors_isInitted != true) {
-			// !!! sensor init
-			sensors_isInitted = true;
-			digitalWrite(PIN_SENSOR_VOLTAGE, HIGH);
-			delay(10);
-			// i2cScannerSetup();
-			bme280_setup();
-			mpu6050_setup();
-			my_hall_init();
-			my_aBuzzer_init();
-		} else {
-			// we keep updating the data buffer
-			sensorData_currMillis = millis();
-			if (sensorData_currMillis - sensorData_prevMillis >= sensorData_delay) {
-				sensorData_prevMillis = sensorData_currMillis;
+		sensorData_currMillis = millis();
+		if (sensorData_currMillis - sensorData_prevMillis >= sensorData_delay) {
+			sensorData_prevMillis = sensorData_currMillis;
 
-				double temperature = bme280_getTemperature_Celsius();
-				double humidity = bme280_getHumidity();
-				double pressure = bme280_getBaroPressure_hPa();
-				bool magnetic = my_hall_getData();
-				bool orientation = mpu6050_getOrientation;
-				bool opened = my_light_getOpened();
-
-				idx_currWrite = idx_currWrite % DATA_BUFF_LENGTH;
-				dataBuffer[idx_currWrite].update(temperature, humidity, pressure, magnetic, orientation,
-								 opened, "", String(get_time()));
-				idx_currWrite++;
-			}
+			sensor_collectData();
 		}
 
 	} else if (currentStatus == A9G_RETRY) {
@@ -333,6 +288,71 @@ void sensor_pollForStatus(void)
 			// do nothing
 		}
 	}
+}
+
+void sensor_collectData(void)
+{
+	// if (sensors_isInitted != true) {
+	// 	// !!! sensor init
+	// 	sensors_isInitted = true;
+	// 	digitalWrite(PIN_SENSOR_VOLTAGE, HIGH);
+	// 	delay(10);
+	// 	// i2cScannerSetup();
+	// 	bme280_setup();
+	// 	mpu6050_setup();
+	// 	my_hall_init();
+	// 	my_aBuzzer_init();
+	// } else {
+	// 	// we keep updating the data buffer
+	// 	sensorData_currMillis = millis();
+	// 	if (sensorData_currMillis - sensorData_prevMillis >= sensorData_delay) {
+	// 		sensorData_prevMillis = sensorData_currMillis;
+
+	// 		double temperature = bme280_getTemperature_Celsius();
+	// 		double humidity = bme280_getHumidity();
+	// 		double pressure = bme280_getBaroPressure_hPa();
+	// 		bool magnetic = my_hall_getData();
+	// 		bool orientation = mpu6050_getOrientation;
+	// 		bool opened = my_light_getOpened();
+
+	// 		idx_currWrite = idx_currWrite % DATA_BUFF_LENGTH;
+	// 		dataBuffer[idx_currWrite].update(temperature, humidity, pressure, magnetic, orientation,
+	// 						 opened, "", String(get_time()));
+	// 		idx_currWrite++;
+	// 	}
+	// }
+
+	// sensor init
+	sensors_isInitted = true;
+	digitalWrite(PIN_SENSOR_VOLTAGE, HIGH);
+	delay(10);
+	// i2cScannerSetup();
+	bme280_setup();
+	mpu6050_setup();
+	my_hall_init();
+	my_aBuzzer_init();
+	delay(10);
+
+	double temperature = bme280_getTemperature_Celsius();
+	double humidity = bme280_getHumidity();
+	double pressure = bme280_getBaroPressure_hPa();
+	bool magnetic = my_hall_getData();
+	bool orientation = mpu6050_getOrientation;
+	bool opened = my_light_getOpened();
+
+	idx_currWrite = idx_currWrite % DATA_BUFF_LENGTH;
+	dataBuffer[idx_currWrite].update(temperature, humidity, pressure, magnetic, orientation, opened, "",
+					 String(get_time()));
+	idx_currWrite++;
+
+	// check for threshold
+	if (currThreshold.check_passed(&(dataBuffer[idx_currWrite])) != true) {
+		my_aBuzzer_alarm();
+	}
+
+	// turn off the sensors
+	sensors_isInitted = false;
+	digitalWrite(PIN_SENSOR_VOLTAGE, LOW);
 }
 
 void gatewayCommunication_task(void *pvParameters)
