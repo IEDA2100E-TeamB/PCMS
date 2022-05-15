@@ -161,7 +161,7 @@ void sensor_pollForStatus()
 		}
 
 	} else if (currentStatus == TRUCK_WIFI_CONNECTED) {
-		if ((previousStatus != TRUCK_WIFI_CONNECTED) || previousStatus != A9G_CONNECTED) {
+		if ((previousStatus != TRUCK_WIFI_CONNECTED) && previousStatus != A9G_CONNECTED) {
 			// !!! sensor init
 			// i2cScannerSetup();
 			bme280_setup();
@@ -181,7 +181,7 @@ void sensor_pollForStatus()
 		}
 
 	} else if (currentStatus == A9G_CONNECTED) {
-		if ((previousStatus != TRUCK_WIFI_CONNECTED) || previousStatus != A9G_CONNECTED) {
+		if ((previousStatus != TRUCK_WIFI_CONNECTED) && previousStatus != A9G_CONNECTED) {
 			// !!! sensor init
 			// i2cScannerSetup();
 			bme280_setup();

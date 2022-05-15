@@ -18,6 +18,7 @@ typedef enum {
 	A9G_CONNECTED,
 	A9G_RETRY,
 } system_status;
+#define DATA_BUFF_LENGTH 20
 // ======== PIN USED ========
 // debugging
 static const uint8_t SERIAL0_RX = 3;
@@ -38,7 +39,7 @@ static const uint8_t SERIAL2_TX = 17;
 system_status currentStatus = DISCONNECT;
 system_status previousStatus = DISCONNECT;
 // sensor
-SensorData dataBuffer[20];
+SensorData dataBuffer[DATA_BUFF_LENGTH];
 uint8_t idx_currRead = 0;
 uint8_t idx_currWrite = 0;
 Threshold currThreshold{ -10, 50, 20, 90, 850, 1100, true, true };
