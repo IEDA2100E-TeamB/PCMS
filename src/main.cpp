@@ -2,7 +2,11 @@
 #include "test_board.h"
 
 // ======== INCLUDES ========
-// local system
+// system
+// #include "soc/soc.h"
+// #include "soc/rtc_cntl_reg.h"
+// sensor
+#include "sensor_data.hpp"
 #include "i2c_scanner.h"
 #include "i2c_bme280.h"
 #include "i2c_mpu6050.h"
@@ -14,8 +18,6 @@
 #include "socket_conn.hpp"
 #include "unix_time.hpp"
 // server communication
-// #include "soc/soc.h"
-// #include "soc/rtc_cntl_reg.h"
 #include "PCMS_GPS_GPRS.hpp"
 
 // ======== FUNCTION PROTOTYPES ========
@@ -27,23 +29,37 @@ void serverCommunication_task(void *pvParameters);
 void setup()
 {
 	// put your setup code here, to run once:
+	// for debugging
 	Serial.begin(115200);
 
-	// ======== sensor VOUT init ========
-	pinMode(SENSOR_VOLTAGE, OUTPUT);
-	digitalWrite(SENSOR_VOLTAGE, LOW);
+	// ======== system status init ========
+	currentStatus = DISCONNECT;
+	currentStatus = DISCONNECT;
+	idx_currRead = 0;
+	idx_currWrite = 0;
+	currThreshold.update(-10, 50, 20, 90, 850, 1100, true, true);
+
+	// ======== sensor voltage pin init ========
+	pinMode(PIN_SENSOR_VOLTAGE, OUTPUT);
+	digitalWrite(PIN_SENSOR_VOLTAGE, HIGH);
+	delay(50);
+	bme280_setup();
+	mpu6050_setup();
+	my_hall_init();
+	my_aBuzzer_init();
+	// Serial.println("sensor inited!");
 
 	// ======== gateway communication init ========
 	// !!! we init this part first
-	if (wifi_init() != true) {
-		return;
-	}
-	if (sync_time() != true) {
-		return;
-	}
-	if (socket_connect() != true) {
-		return;
-	}
+	// if (wifi_init() != true) {
+	// 	return;
+	// }
+	// if (sync_time() != true) {
+	// 	return;
+	// }
+	// if (socket_connect() != true) {
+	// 	return;
+	// }
 
 	// ======== server communication init ========
 	// !!! we skip server communication init and ONLY init it when neccesary
@@ -55,7 +71,7 @@ void setup()
 	BaseType_t xReturned = pdFAIL;
 	//create a task that will be executed in the function, with priority 1 and executed on core 0
 	xReturned = xTaskCreatePinnedToCore(sensor_task, /* Task function. */
-					    "System", /* name of task. */
+					    "Sensor", /* name of task. */
 					    10000, /* Stack size of task */
 					    NULL, /* parameter of the task */
 					    1, /* priority of the task */
@@ -64,12 +80,14 @@ void setup()
 	if (xReturned != pdPASS) {
 		return;
 	}
+	Serial.println("sensor thread inited!");
 }
 
 void loop()
 {
 	// ======== TEST BOARD start ========
 	// led_blinkWithoutDelay();
+	// i2cScannerLoop();
 	// ======== TEST BOARD end ========
 
 	// put your main code here, to run repeatedly:
@@ -114,13 +132,12 @@ void sensor_task(void *pvParameters)
 {
 	for (;;) {
 		// --Task application code here.--
-		// i2cScannerLoop();
 		bme280_print();
 		mpu6050_print();
 		my_light_print();
-		// my_aBuzzer_alarm();
+		my_aBuzzer_alarm();
 
-		sensor_pollForStatus();
+		// sensor_pollForStatus();
 	}
 
 	/* Tasks must not attempt to return from their implementing
@@ -167,6 +184,8 @@ void sensor_pollForStatus()
 			bme280_setup();
 			mpu6050_setup();
 			my_aBuzzer_init();
+		} else {
+			// we keep updating the data buffer
 		}
 
 	} else if (currentStatus == TRUCK_WIFI_RETRY) {
@@ -187,6 +206,8 @@ void sensor_pollForStatus()
 			bme280_setup();
 			mpu6050_setup();
 			my_aBuzzer_init();
+		} else {
+			// we keep updating the data buffer
 		}
 
 	} else if (currentStatus == A9G_RETRY) {

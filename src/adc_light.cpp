@@ -9,7 +9,7 @@ void my_light_print()
 	if (currMillis - prevMillis >= MEASURE_DELAY) {
 		prevMillis = currMillis;
 		int val;
-		val = analogRead(4);
+		val = analogRead(PIN_ADC_LIGHT_SENSOR);
 		Serial.println(val, DEC);
 	}
 }
