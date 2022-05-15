@@ -1,4 +1,4 @@
-#include <Arduino.h>
+#include "main.h"
 #include "test_board.h"
 
 // ======== INCLUDES ========
@@ -12,76 +12,11 @@
 // gateway communication
 #include <WiFi.h>
 #include "socket_conn.hpp"
-#include "sensor_data.hpp"
 #include "unix_time.hpp"
 // server communication
 // #include "soc/soc.h"
 // #include "soc/rtc_cntl_reg.h"
 #include "PCMS_GPS_GPRS.hpp"
-
-// ======== DEFINES ========
-typedef enum {
-	DISCONNECT,
-	WAREHOUSE_WIFI_CONNECTING,
-	WAREHOUSE_WIFI_CONNECTED,
-	WAREHOUSE_WIFI_RETRY,
-	TRUCK_WIFI_CONNECTING,
-	TRUCK_WIFI_CONNECTED,
-	TRUCK_WIFI_RETRY,
-	A9G_CONNECTING,
-	A9G_CONNECTED,
-	A9G_RETRY,
-} network_status;
-// ======== PIN USED ========
-// debugging
-static const uint8_t SERIAL0_RX = 3;
-static const uint8_t SERIAL0_TX = 1;
-// local system
-static const uint8_t ADC_LIGHT_SENSOR = 4;
-static const uint8_t DIN_HALL_SENSOR = 12;
-static const uint8_t DOU_ACTIVE_BUZZER = 18;
-static const uint8_t I2C_SDA = 21;
-static const uint8_t I2C_SCL = 22;
-// server communication
-static const uint8_t SERIAL2_RX = 16;
-static const uint8_t SERIAL2_TX = 17;
-
-// ======== VARIABLES ========
-SensorData dataBuffer[20];
-uint8_t idx_currRead = 0;
-uint8_t idx_currWrite = 0;
-Threshold currThreshold{ -10, 50, 20, 90, 850, 1100, true, true };
-// network status
-network_status currentStatus = DISCONNECT;
-network_status previousStatus = DISCONNECT;
-// local system
-static uint32_t bme280_prevMillis = 0;
-static uint32_t bme280_currMillis = 0;
-static uint32_t bme280_delay = 5000;
-static uint32_t mpu6050_prevMillis = 0;
-static uint32_t mpu6050_currMillis = 0;
-static uint32_t mpu6050_delay = 5000;
-static uint32_t hall_prevMillis = 0;
-static uint32_t hall_currMillis = 0;
-static uint32_t hall_delay = 5000;
-static uint32_t light_prevMillis = 0;
-static uint32_t light_currMillis = 0;
-static uint32_t light_delay = 5000;
-static uint32_t buzzer_prevMillis = 0;
-static uint32_t buzzer_currMillis = 0;
-static uint32_t buzzer_delay = 5000;
-// gateway communication
-static bool isWiFiInitSuccess = false;
-static bool isSocketConnectSuccess = false;
-static bool isTimeSyncSuccess = false;
-// server communication
-static bool A9G_state = false, disconnected_gateway = true;
-static String GPS_data = "";
-
-// ======== FUNCTION PROTOTYPES ========
-void system_task(void *pvParameters);
-void gatewayCommunication_task(void *pvParameters);
-void serverCommunication_task(void *pvParameters);
 
 void setup()
 {
@@ -218,7 +153,7 @@ void serverCommunication_task(void *pvParameters)
 	for (;;) {
 		// --Task application code here.--
 		SensorData test(0, 0, 0, 0, 0, 0, "test", "test");
-		if (disconnected_gateway == true) {
+		if (currentStatus == DISCONNECT) {
 			//when disconnected from gateway turn on A9G
 			if (A9G_state == false) {
 				connect_mqqt_broker();
