@@ -5,6 +5,7 @@
 #include <ArduinoJSON.h>
 #include <sensor_data.hpp>
 #include <threshold.hpp>
+//#include <main.h>
 
 
 void sendCommandToA9G(String command, int maxTime, const char readReplay[]);

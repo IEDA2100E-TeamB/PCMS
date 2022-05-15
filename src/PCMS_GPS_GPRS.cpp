@@ -1,15 +1,10 @@
-#ifndef PCMS_GPS_GPRS
-#define PCMS_GPS_GPRS
-
 #include <PCMS_GPS_GPRS.hpp>
-#include <sensor_data.hpp>
-#include <threshold.hpp>
-#include <main.h>
 
 int countTrueCommand=0;
 int countTimeCommand=0;
 bool found = false, connect = false;
 String saved_serial_buffer="", gpsLocation="NULL";
+extern Threshold currThreshold;
 
 void sendCommandToA9G(String command, int maxTime, const char readReplay[]) {
   Serial.print(countTrueCommand);
@@ -197,7 +192,3 @@ void send_JSON_data(SensorData sensorData){
 void turn_off_A9G(){
   Serial2.println("AT+RST=2");
 }
-
-
-
-#endif
