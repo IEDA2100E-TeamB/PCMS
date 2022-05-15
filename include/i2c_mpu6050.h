@@ -1,5 +1,5 @@
-#ifndef PERIPHERAL_MPU6050_H
-#define PERIPHERAL_MPU6050_H
+#ifndef MY_MPU6050_H
+#define MY_MPU6050_H
 
 bool mpu6050_setup();
 // sensors_vec_t mpu6050_getAcceleration();

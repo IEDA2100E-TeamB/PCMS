@@ -1,5 +1,5 @@
-#ifndef PERIPHERAL_BME280_H
-#define PERIPHERAL_BME280_H
+#ifndef MY_BME280_H
+#define MY_BME280_H
 
 bool bme280_setup();
 float bme280_getTemperature_Celsius();
