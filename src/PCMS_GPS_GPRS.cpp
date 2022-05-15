@@ -1,17 +1,14 @@
-#ifndef PCMS_GPS_GPRS
-#define PCMS_GPS_GPRS
+//#ifndef PCMS_GPS_GPRS
+//#define PCMS_GPS_GPRS
 
 #include <PCMS_GPS_GPRS.hpp>
-#include <sensor_data.hpp>
-#include <threshold.hpp>
-
-using namespace Threshold;
-using namespace SensorData;
+//#include <sensor_data.hpp>
+//#include <threshold.hpp>
 
 int countTrueCommand=0;
 int countTimeCommand=0;
-boolean found = false;
-String saved_serial_buffer="",gpsLocation="";
+bool found = false;
+String temp_json="temp_json",saved_serial_buffer="",gpsLocation="";
 extern String GPS_data;
 
 
@@ -68,10 +65,11 @@ void get_GPS_data(){
     saved_serial_buffer="";
     
     Serial2.println("AT+LOCATION=2");
+    delay(2000);
     serial_buffer=Serial2.readString();
     Serial.print(serial_buffer+'\n');
     if(serial_buffer.indexOf("minTemperature")>-1) saved_serial_buffer=serial_buffer.substring(serial_buffer.indexOf("minTemperature"));
-    if(serial_buffer.indexOf(".")>-1){
+    if(serial_buffer.indexOf("OK")>-1){
       gpsLocation=serial_buffer.substring(serial_buffer.indexOf(".")-2,serial_buffer.indexOf(".")+17);
       Serial.print(gpsLocation+'\n');
     }
@@ -122,7 +120,7 @@ void check_new_threshold(){
     sring_allowOrientationChange=string_serial_buffer.substring(string_serial_buffer.indexOf("allowOrientationChange"));
     sring_allowOrientationChange=sring_allowOrientationChange.substring(sring_allowOrientationChange.indexOf(":")+1,sring_allowOrientationChange.indexOf("/"));
 
-    
+    /*
     minTemperature=string_minTemperature.toDouble();
     maxTemperature=string_maxTemperature.toDouble();
     minHumidity=string_minHumidity.toDouble();
@@ -133,7 +131,7 @@ void check_new_threshold(){
     else allowMagneticFeild = false;
     if(sring_allowOrientationChange.toInt()>0) allowOrientationChange=true;
     else allowOrientationChange=false;
-    
+    */
 
     Serial.print("NEW THRESHOLD DETECTED: "+ string_minTemperature+" "+string_maxTemperature+" "+string_minHumidity+" "+string_maxHumidity+" "+string_minPressure+" "+
     string_maxPressure+" "+string_allowMagneticFeild+" "+sring_allowOrientationChange+'\n');
@@ -168,7 +166,7 @@ void check_new_threshold(){
     sring_allowOrientationChange=string_serial_buffer.substring(string_serial_buffer.indexOf("allowOrientationChange"));
     sring_allowOrientationChange=sring_allowOrientationChange.substring(sring_allowOrientationChange.indexOf(":")+1,sring_allowOrientationChange.indexOf("/"));
 
-    
+    /*
     minTemperature=string_minTemperature.toDouble();
     maxTemperature=string_maxTemperature.toDouble();
     minHumidity=string_minHumidity.toDouble();
@@ -179,7 +177,7 @@ void check_new_threshold(){
     else allowMagneticFeild = false;
     if(sring_allowOrientationChange.toInt()>0) allowOrientationChange=true;
     else allowOrientationChange=false;
-    
+    */
 
     Serial.print("NEW THRESHOLD DETECTED: "+ string_minTemperature+" "+string_maxTemperature+" "+string_minHumidity+" "+string_maxHumidity+" "+string_minPressure+" "+
     string_maxPressure+" "+string_allowMagneticFeild+" "+sring_allowOrientationChange+'\n');
@@ -188,7 +186,7 @@ void check_new_threshold(){
 }
 
 void send_JSON_data(){
-  sendCommandToA9G("AT+MQTTPUB=\"IEDA_test\",\""+to_json()+"\",0,0,0",3,"OK");         
+  sendCommandToA9G("AT+MQTTPUB=\"IEDA_test\",\""+temp_json+"\",0,0,0",3,"OK");         
 }
 
 void turn_off_A9G(){
@@ -197,4 +195,4 @@ void turn_off_A9G(){
 
 
 
-#endif
+//#endif
