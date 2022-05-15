@@ -5,5 +5,6 @@
 #include "main.h"
 
 void my_light_print();
+uint16_t my_light_getData();
 
 #endif

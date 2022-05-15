@@ -8,8 +8,13 @@ void my_light_print()
 	uint32_t currMillis = millis();
 	if (currMillis - prevMillis >= MEASURE_DELAY) {
 		prevMillis = currMillis;
-		int val;
+		uint16_t val;
 		val = analogRead(PIN_ADC_LIGHT_SENSOR);
 		Serial.println(val, DEC);
 	}
+}
+
+uint16_t my_light_getData()
+{
+	return analogRead(PIN_ADC_LIGHT_SENSOR);
 }

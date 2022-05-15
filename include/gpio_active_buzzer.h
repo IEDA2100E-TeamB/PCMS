@@ -2,6 +2,7 @@
 #define MY_ACTIVE_BUZZER_H
 
 #include <Arduino.h>
+#include "main.h"
 
 void my_aBuzzer_init();
 void my_aBuzzer_alarm();
