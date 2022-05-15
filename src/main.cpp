@@ -2,7 +2,7 @@
 #include <Arduino.h>
 
 
-bool A9G_state = false, disconnected_gateway = false;
+bool A9G_state = false, disconnected_gateway = true;
 String GPS_data="";
 
 
@@ -20,12 +20,14 @@ void loop()
   if(disconnected_gateway==true){
     //when disconnected from gateway turn on A9G
     if(A9G_state==false){
-	  Serial.print("ON");
-	  //digitalWrite(23, HIGH);
-	  
-      connect_mqqt_broker();
-      start_GPS();
-      A9G_state=true;
+		if(connect_mqqt_broker()){
+			Serial.println("SUCCESSFULLY CONNECTED TO THE SERVER");
+			start_GPS();
+		}
+		else{
+			Serial.println("FAILED TO CONNECT TO THE SERVER");
+		}
+		A9G_state = true;
     }
     //when A9G is already operating
     else{
