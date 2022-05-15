@@ -20,7 +20,18 @@
 #include "PCMS_GPS_GPRS.hpp"
 
 // ======== DEFINES ========
-
+typedef enum {
+	DISCONNECT,
+	WAREHOUSE_WIFI_CONNECTING,
+	WAREHOUSE_WIFI_CONNECTED,
+	WAREHOUSE_WIFI_RETRY,
+	TRUCK_WIFI_CONNECTING,
+	TRUCK_WIFI_CONNECTED,
+	TRUCK_WIFI_RETRY,
+	A9G_CONNECTING,
+	A9G_CONNECTED,
+	A9G_RETRY,
+} network_status;
 // ======== PIN USED ========
 // debugging
 static const uint8_t SERIAL0_RX = 3;
@@ -40,6 +51,9 @@ SensorData dataBuffer[20];
 uint8_t idx_currRead = 0;
 uint8_t idx_currWrite = 0;
 Threshold currThreshold{ -10, 50, 20, 90, 850, 1100, true, true };
+// network status
+network_status currentStatus = DISCONNECT;
+network_status previousStatus = DISCONNECT;
 // local system
 static uint32_t bme280_prevMillis = 0;
 static uint32_t bme280_currMillis = 0;
