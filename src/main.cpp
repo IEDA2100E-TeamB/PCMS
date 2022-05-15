@@ -20,7 +20,7 @@
 
 // ======== FUNCTION PROTOTYPES ========
 void sensor_task(void *pvParameters);
-void sensor_pollForStatus();
+void sensor_pollForStatus(void);
 void gatewayCommunication_task(void *pvParameters);
 void serverCommunication_task(void *pvParameters);
 
@@ -40,14 +40,16 @@ void setup()
 	// ======== sensor voltage pin init ========
 	pinMode(PIN_SENSOR_VOLTAGE, OUTPUT);
 	digitalWrite(PIN_SENSOR_VOLTAGE, LOW);
+	sensors_isInitted = false;
 
-	// for testing
-	// delay(50);
+	// !!! for testing
+	// digitalWrite(PIN_SENSOR_VOLTAGE, HIGH);
+	// delay(10);
 	// bme280_setup();
 	// mpu6050_setup();
 	// my_hall_init();
 	// my_aBuzzer_init();
-	// Serial.println("sensor inited!");
+	// Serial.println("sensor initted!");
 
 	// ======== gateway communication init ========
 	if (wifi_init() != true) {
@@ -77,7 +79,7 @@ void setup()
 	if (xReturned != pdPASS) {
 		return;
 	}
-	// Serial.println("sensor thread inited!");
+	// Serial.println("sensor thread initted!");
 }
 
 void loop()
@@ -177,7 +179,7 @@ void sensor_task(void *pvParameters)
 	for (;;) {
 		// --Task application code here.--
 
-		// for testing
+		// !!! for testing
 		// bme280_print();
 		// mpu6050_print();
 		// my_light_print();
@@ -195,51 +197,57 @@ void sensor_task(void *pvParameters)
 	vTaskDelete(NULL);
 }
 
-void sensor_pollForStatus()
+void sensor_pollForStatus(void)
 {
 	if (currentStatus == DISCONNECT) {
-		if ((previousStatus == TRUCK_WIFI_CONNECTED) || (previousStatus == A9G_CONNECTED)) {
+		if (sensors_isInitted) {
 			// turn off the sensor
+			sensors_isInitted = false;
 			digitalWrite(PIN_SENSOR_VOLTAGE, LOW);
 		} else {
 			// do nothing
 		}
 
 	} else if (currentStatus == WAREHOUSE_WIFI_CONNECTING) {
-		if ((previousStatus == TRUCK_WIFI_CONNECTED) || (previousStatus == A9G_CONNECTED)) {
+		if (sensors_isInitted) {
 			// turn off the sensor
+			sensors_isInitted = false;
 			digitalWrite(PIN_SENSOR_VOLTAGE, LOW);
 		} else {
 			// do nothing
 		}
 
 	} else if (currentStatus == WAREHOUSE_WIFI_CONNECTED) {
-		if ((previousStatus == TRUCK_WIFI_CONNECTED) || (previousStatus == A9G_CONNECTED)) {
+		if (sensors_isInitted) {
 			// turn off the sensor
+			sensors_isInitted = false;
 			digitalWrite(PIN_SENSOR_VOLTAGE, LOW);
 		} else {
 			// do nothing
 		}
 
 	} else if (currentStatus == WAREHOUSE_WIFI_RETRY) {
-		if ((previousStatus == TRUCK_WIFI_CONNECTED) || (previousStatus == A9G_CONNECTED)) {
+		if (sensors_isInitted) {
 			// turn off the sensor
+			sensors_isInitted = false;
 			digitalWrite(PIN_SENSOR_VOLTAGE, LOW);
 		} else {
 			// do nothing
 		}
 
 	} else if (currentStatus == TRUCK_WIFI_CONNECTING) {
-		if ((previousStatus == TRUCK_WIFI_CONNECTED) || (previousStatus == A9G_CONNECTED)) {
+		if (sensors_isInitted) {
 			// turn off the sensor
+			sensors_isInitted = false;
 			digitalWrite(PIN_SENSOR_VOLTAGE, LOW);
 		} else {
 			// do nothing
 		}
 
 	} else if (currentStatus == TRUCK_WIFI_CONNECTED) {
-		if ((previousStatus != TRUCK_WIFI_CONNECTED) && previousStatus != A9G_CONNECTED) {
+		if (sensors_isInitted != true) {
 			// !!! sensor init
+			sensors_isInitted = true;
 			digitalWrite(PIN_SENSOR_VOLTAGE, HIGH);
 			delay(10);
 			// i2cScannerSetup();
@@ -249,27 +257,46 @@ void sensor_pollForStatus()
 			my_aBuzzer_init();
 		} else {
 			// we keep updating the data buffer
+			sensorData_currMillis = millis();
+			if (sensorData_currMillis - sensorData_prevMillis >= sensorData_delay) {
+				sensorData_prevMillis = sensorData_currMillis;
+
+				double temperature = bme280_getTemperature_Celsius();
+				double humidity = bme280_getHumidity();
+				double pressure = bme280_getBaroPressure_hPa();
+				bool magnetic = my_hall_getData();
+				bool orientation = mpu6050_getOrientation;
+				bool opened = my_light_getOpened();
+
+				idx_currWrite = idx_currWrite % DATA_BUFF_LENGTH;
+				dataBuffer[idx_currWrite].update(temperature, humidity, pressure, magnetic, orientation,
+								 opened, "", String(get_time()));
+				idx_currWrite++;
+			}
 		}
 
 	} else if (currentStatus == TRUCK_WIFI_RETRY) {
-		if ((previousStatus == TRUCK_WIFI_CONNECTED) || (previousStatus == A9G_CONNECTED)) {
+		if (sensors_isInitted) {
 			// turn off the sensor
+			sensors_isInitted = false;
 			digitalWrite(PIN_SENSOR_VOLTAGE, LOW);
 		} else {
 			// do nothing
 		}
 
 	} else if (currentStatus == A9G_CONNECTING) {
-		if ((previousStatus == TRUCK_WIFI_CONNECTED) || (previousStatus == A9G_CONNECTED)) {
+		if (sensors_isInitted) {
 			// turn off the sensor
+			sensors_isInitted = false;
 			digitalWrite(PIN_SENSOR_VOLTAGE, LOW);
 		} else {
 			// do nothing
 		}
 
 	} else if (currentStatus == A9G_CONNECTED) {
-		if ((previousStatus != TRUCK_WIFI_CONNECTED) && previousStatus != A9G_CONNECTED) {
+		if (sensors_isInitted != true) {
 			// !!! sensor init
+			sensors_isInitted = true;
 			digitalWrite(PIN_SENSOR_VOLTAGE, HIGH);
 			delay(10);
 			// i2cScannerSetup();
@@ -279,11 +306,28 @@ void sensor_pollForStatus()
 			my_aBuzzer_init();
 		} else {
 			// we keep updating the data buffer
+			sensorData_currMillis = millis();
+			if (sensorData_currMillis - sensorData_prevMillis >= sensorData_delay) {
+				sensorData_prevMillis = sensorData_currMillis;
+
+				double temperature = bme280_getTemperature_Celsius();
+				double humidity = bme280_getHumidity();
+				double pressure = bme280_getBaroPressure_hPa();
+				bool magnetic = my_hall_getData();
+				bool orientation = mpu6050_getOrientation;
+				bool opened = my_light_getOpened();
+
+				idx_currWrite = idx_currWrite % DATA_BUFF_LENGTH;
+				dataBuffer[idx_currWrite].update(temperature, humidity, pressure, magnetic, orientation,
+								 opened, "", String(get_time()));
+				idx_currWrite++;
+			}
 		}
 
 	} else if (currentStatus == A9G_RETRY) {
-		if ((previousStatus == TRUCK_WIFI_CONNECTED) || (previousStatus == A9G_CONNECTED)) {
+		if (sensors_isInitted) {
 			// turn off the sensor
+			sensors_isInitted = false;
 			digitalWrite(PIN_SENSOR_VOLTAGE, LOW);
 		} else {
 			// do nothing

@@ -91,6 +91,12 @@ float mpu6050_getTemperature()
 	return eventTemperature.temperature;
 }
 
+bool mpu6050_getOrientation()
+{
+	// TODO
+	return false;
+}
+
 void mpu6050_print()
 {
 	uint32_t currMillis = millis();
