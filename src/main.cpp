@@ -171,6 +171,8 @@ void loop()
 	// ======== TEST BOARD end ========
 
 	// put your main code here, to run repeatedly:
+	// Serial.println("this is loop()");
+	// delay(1000);
 }
 
 void system_task(void *pvParameters)
