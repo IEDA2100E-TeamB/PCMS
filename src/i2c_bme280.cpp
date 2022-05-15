@@ -1,3 +1,5 @@
+#include <Arduino.h>
+#include <Adafruit_BME280.h>
 #include "i2c_bme280.h"
 
 #define BME280_ADDR 0x76

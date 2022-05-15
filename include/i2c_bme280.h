@@ -1,9 +1,6 @@
 #ifndef PERIPHERAL_BME280_H
 #define PERIPHERAL_BME280_H
 
-#include <Arduino.h>
-#include <Adafruit_BME280.h>
-
 bool bme280_setup();
 float bme280_getTemperature_Celsius();
 float bme280_getHumidity();

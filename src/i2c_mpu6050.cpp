@@ -1,3 +1,5 @@
+#include <Arduino.h>
+#include <Adafruit_MPU6050.h>
 #include "i2c_mpu6050.h"
 
 #define MPU6050_ADDR 0x68
@@ -30,7 +32,7 @@ bool mpu6050_setup()
 	return true;
 }
 
-sensors_vec_t mpu6050_getAcceleration()
+static sensors_vec_t mpu6050_getAcceleration()
 {
 	sensors_event_t eventAcceleration;
 	mpu6050A->getEvent(&eventAcceleration);
@@ -56,7 +58,7 @@ float mpu6050_getAcceleration_z()
 	return eventAcceleration.acceleration.z;
 }
 
-sensors_vec_t mpu6050_getGyro()
+static sensors_vec_t mpu6050_getGyro()
 {
 	sensors_event_t eventGyro;
 	mpu6050G->getEvent(&eventGyro);
