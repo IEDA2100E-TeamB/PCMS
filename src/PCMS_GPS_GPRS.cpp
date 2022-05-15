@@ -4,13 +4,12 @@
 #include <PCMS_GPS_GPRS.hpp>
 #include <sensor_data.hpp>
 #include <threshold.hpp>
+#include <main.h>
 
 int countTrueCommand=0;
 int countTimeCommand=0;
 bool found = false;
 String saved_serial_buffer="",gpsLocation="";
-extern String GPS_data;
-
 
 void sendCommandToA9G(String command, int maxTime, const char readReplay[]) {
   Serial.print(countTrueCommand);
@@ -78,14 +77,22 @@ void get_GPS_data(){
 
 
 //-------------------------GPRS---------------------------
-void connect_mqqt_broker(){
-    sendCommandToA9G("AT+CGDCONT=1,\"IP\",\"pccw\"", 3, "OK");    
-    sendCommandToA9G("AT+CGACT=1,1", 3, "OK");
-    sendCommandToA9G("AT+MQTTCONN=\"broker.hivemq.com\",1883,\"PCMS\",120,0", 5, "OK");
-    sendCommandToA9G("AT+MQTTSUB=\"IEDA_test\",1,0", 3, "OK");
+bool connect_mqqt_broker(){
+    sendCommandToA9G("AT+CGDCONT=1,\"IP\",\"pccw\"", 3, "OK");
+    if(found==true) sendCommandToA9G("AT+CGACT=1,1", 3, "OK");
+    else return false;
+
+    if(found==true) sendCommandToA9G("AT+MQTTCONN=\"broker.hivemq.com\",1883,\"PCMS\",120,0", 5, "OK");
+    else return false;
+
+    if(found==true) sendCommandToA9G("AT+MQTTSUB=\"IEDA_test\",1,0", 3, "OK");
+    else return false;
+    
+    if(found==true) return true;
+    else return false;
 }
 
-Threshold check_new_threshold(){
+void check_new_threshold(){
   String serial_buffer="", string_serial_buffer="";
   String string_minTemperature="", string_maxTemperature="", string_minHumidity="", string_maxHumidity="";
   String string_minPressure="", string_maxPressure="", string_allowMagneticField="", sring_allowOrientationChange="";
@@ -124,11 +131,9 @@ Threshold check_new_threshold(){
     else tempMagneticField = false;
     if(sring_allowOrientationChange.toInt()>0) tempOrientation=true;
     else tempOrientation=false;
-    Threshold threshold(string_minTemperature.toDouble(),string_maxTemperature.toDouble(),string_minHumidity.toDouble(),string_maxHumidity.toDouble(),
+
+    currThreshold.update(string_minTemperature.toDouble(),string_maxTemperature.toDouble(),string_minHumidity.toDouble(),string_maxHumidity.toDouble(),
                       string_minPressure.toDouble(), string_maxPressure.toDouble(), tempMagneticField, tempOrientation);
-    return threshold;
-    
-    
 
     //Serial.print("NEW THRESHOLD DETECTED: "+ string_minTemperature+" "+string_maxTemperature+" "+string_minHumidity+" "+string_maxHumidity+" "+string_minPressure+" "+
     //string_maxPressure+" "+string_allowMagneticField+" "+sring_allowOrientationChange+'\n');
@@ -170,9 +175,8 @@ Threshold check_new_threshold(){
     if(sring_allowOrientationChange.toInt()>0) tempOrientation=true;
     else tempOrientation=false;
     
-    Threshold threshold(string_minTemperature.toDouble(),string_maxTemperature.toDouble(),string_minHumidity.toDouble(),string_maxHumidity.toDouble(),
+    currThreshold.update(string_minTemperature.toDouble(),string_maxTemperature.toDouble(),string_minHumidity.toDouble(),string_maxHumidity.toDouble(),
                       string_minPressure.toDouble(), string_maxPressure.toDouble(), tempMagneticField, tempOrientation);
-    return threshold;
     
 
     //Serial.print("NEW THRESHOLD DETECTED: "+ string_minTemperature+" "+string_maxTemperature+" "+string_minHumidity+" "+string_maxHumidity+" "+string_minPressure+" "+

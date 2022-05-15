@@ -19,6 +19,7 @@ typedef enum {
 	A9G_RETRY,
 } system_status;
 #define DATA_BUFF_LENGTH 20
+#define TIMEOUT_TIME 600000
 // ======== PIN USED ========
 // debugging
 static const uint8_t SERIAL0_RX = 3;
@@ -64,5 +65,7 @@ static bool isSocketConnectSuccess = false;
 static bool isTimeSyncSuccess = false;
 // server communication
 static bool A9G_state = false;
+uint32_t disconnect_prevMillis = 0;
+uint32_t disconnect_currMillis = 0;
 
 #endif
