@@ -15,6 +15,7 @@ class SensorData {
 	String checkTime;
 
     public:
+	SensorData();
 	SensorData(double temperature, double humidity, double pressure, bool magneticFeild, bool orientation,
 		   bool opened, String gpsLocation, String checkTime);
 	void update(double temperature, double humidity, double pressure, bool magneticFeild, bool orientation,

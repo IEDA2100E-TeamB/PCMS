@@ -1,5 +1,18 @@
 #include "sensor_data.hpp"
 
+SensorData::SensorData()
+{
+	temperature = 0;
+	humidity = 0;
+	pressure = 0;
+	magneticFeild = false;
+	orientation = false;
+	opened = false;
+	gpsLocation = "";
+	checkTime = "";
+}
+
+
 SensorData::SensorData(double temperature, double humidity, double pressure, bool magneticFeild, bool orientation,
 		       bool opened, String gpsLocation, String checkTime)
 {
