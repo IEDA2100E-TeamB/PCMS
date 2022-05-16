@@ -1,18 +1,17 @@
 #include "socket_conn.hpp"
 #include "sensor_data.hpp"
 #include "unix_time.hpp"
-#include "config.hpp"
 
 const uint8_t wifiRetryNum = 5;
 const uint8_t socketRetryNum = 5;
 
 WiFiClient client;
 
-bool wifi_init(void)
+bool wifi_init(WiFiConfig &config)
 {
 	// TODO: currently hardcoded, needs change
-	const char *ssid = wifiConfigList[0].ssid;
-	const char *password = wifiConfigList[0].password;
+	const char *ssid = config.ssid;
+	const char *password = config.password;
 
 	Serial.print("Connecting to WiFi: ");
 	Serial.print(ssid);
@@ -30,6 +29,22 @@ bool wifi_init(void)
 
 	Serial.println("Failed");
 	return false;
+}
+
+bool wifi_retry(WiFiConfig &config)
+{
+	for (int i = 0; i < wifiRetryNum; ++i) {
+		if (wifi_init(config)) {
+			return true;
+		}
+		delay(1000);
+	}
+	return false;
+}
+
+bool is_wifi_connected(void)
+{
+	return WiFi.status() == WL_CONNECTED;
 }
 
 bool socket_connect(void)
