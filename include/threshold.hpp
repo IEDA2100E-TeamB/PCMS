@@ -17,7 +17,7 @@ class Threshold {
     public:
 	Threshold(double minTemp, double maxTemp, double minHumi, double maxHumi, double minPres, double maxPres, bool allowMag, bool allowOriChange);
 	void update(double minTemp, double maxTemp, double minHumi, double maxHumi, double minPres, double maxPres, bool allowMag, bool allowOriChange);
-    bool check(SensorData *);
+    bool check_passed(SensorData *);
 };
 
 #endif

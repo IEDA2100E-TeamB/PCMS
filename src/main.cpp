@@ -1,121 +1,422 @@
-#include <Arduino.h>
+#include "main.h"
 #include "test_board.h"
 
 // ======== INCLUDES ========
-// ======== SENSOR SYSTEM ========
+// system
+// #include "soc/soc.h"
+// #include "soc/rtc_cntl_reg.h"
+// sensor
 #include "i2c_scanner.h"
 #include "i2c_bme280.h"
 #include "i2c_mpu6050.h"
 #include "adc_light.h"
 #include "gpio_hall.h"
 #include "gpio_active_buzzer.h"
-// ======== GPS MODULE ========
-#include "PCMS_GPS_GPRS.hpp"
-// ======== GATEWAY ========
-#include <WiFi.h>
+// gateway communication
 #include "socket_conn.hpp"
-#include "sensor_data.hpp"
 #include "unix_time.hpp"
-
-// ======== DEFINES ========
-// please write down the pins used in ascending order:
-#define ADC_LIGHT_SENSOR 4
-#define DIN_HALL_SENSOR 12
-#define DOU_ACTIVE_BUZZER 18
-#define I2C_SDA 21
-#define I2C_SCL 22
-
-// ======== VARIABLES ========
-bool A9G_state = false, disconnected_gateway = true;
-String GPS_data = "";
-
-bool isWiFiInitSuccess = false;
-bool isSocketConnectSuccess = false;
-bool isTimeSyncSuccess = false;
+// server communication
+#include "PCMS_GPS_GPRS.hpp"
 
 // ======== FUNCTION PROTOTYPES ========
+void sensor_task(void *pvParameters);
+void sensor_pollForStatus(void);
+void sensor_collectData(void);
+void communication_pollForStatus(void);
+void gatewayCommunication_task(void *pvParameters);
+void serverCommunication_task(void *pvParameters);
 
 void setup()
 {
-	// // put your setup code here, to run once:
+	// put your setup code here, to run once:
+	// for debugging
 	Serial.begin(115200);
-	// Serial2.begin(115200);
 
-	// // ======== SENSOR SYSTEM ========
-	// // i2cScannerSetup();
+	// ======== system status init ========
+	xMutex = xSemaphoreCreateMutex();
+	currentStatus = WAREHOUSE_WIFI_CONNECTING;
+	currentStatus = WAREHOUSE_WIFI_CONNECTING;
+	idx_currRead = 0;
+	idx_currWrite = 0;
+	currThreshold.update(-10, 50, 20, 90, 850, 1100, true, true);
+
+	// ======== sensor voltage pin init ========
+	pinMode(PIN_SENSOR_VOLTAGE, OUTPUT);
+	digitalWrite(PIN_SENSOR_VOLTAGE, LOW);
+	sensors_isInitted = false;
+
+	// !!! for testing
+	// digitalWrite(PIN_SENSOR_VOLTAGE, HIGH);
+	// delay(10);
 	// bme280_setup();
 	// mpu6050_setup();
+	// my_hall_init();
 	// my_aBuzzer_init();
+	// Serial.println("sensor initted!");
 
-	// // ======== GPS MODULE ========-
-	// sendCommandToA9G("AT", 5, "OK");
-
-	// ======== GATEWAY ========
-	isWiFiInitSuccess = wifi_init();
-	if (!isWiFiInitSuccess) {
+	// ======== gateway communication init ========
+	if (wifi_init() != true) {
 		return;
 	}
-	isTimeSyncSuccess = sync_time();
-	if (!isTimeSyncSuccess) {
+	if (sync_time() != true) {
 		return;
 	}
-	isSocketConnectSuccess = socket_connect();
+	if (socket_connect() != true) {
+		return;
+	}
+
+	// ======== server communication init ========
+	Serial2.begin(115200);
+
+	// ======== sensor thread init ========
+	static TaskHandle_t Task_Sensor = NULL;
+	BaseType_t xReturned = pdFAIL;
+	//create a task that will be executed in the function, with priority 1 and executed on core 0
+	xReturned = xTaskCreatePinnedToCore(sensor_task, /* Task function. */
+					    "Sensor", /* name of task. */
+					    10000, /* Stack size of task */
+					    NULL, /* parameter of the task */
+					    1, /* priority of the task */
+					    &Task_Sensor, /* Task handle to keep track of created task */
+					    0); /* pin task to core 0 */
+	if (xReturned != pdPASS) {
+		return;
+	}
+	// Serial.println("sensor thread initted!");
 }
 
 void loop()
 {
-	// // ======== TEST BOARD start ========
-	// // led_blinkWithoutDelay();
-	// // ======== TEST BOARD end ========
+	// ======== TEST BOARD start ========
+	// led_blinkWithoutDelay();
+	// i2cScannerLoop();
+	// ======== TEST BOARD end ========
 
-	// // put your main code here, to run repeatedly:
-
-	// // ======== SENSOR SYSTEM ========
-	// // i2cScannerLoop();
-	// bme280_print();
-	// mpu6050_print();
-	// my_light_print();
-	// // my_aBuzzer_alarm();
-
-	// // ======== GPS MODULE ========--
-	// if (disconnected_gateway == true) {
-	// 	//when A9G off
-	// 	if (A9G_state == false) {
-	// 		//sendCommandToA9G("AT+SLEEP=0",3,"OK"); //wake A9G up
-	// 		//delay(2000);
-	// 		connect_mqqt_broker();
-	// 		start_GPS();
-	// 		A9G_state = true;
-	// 	}
-	// 	//when A9G is already operating
-	// 	else {
-	// 		get_GPS_data();
-
-	// 		//Serial.print("GPS DATA: ");
-	// 		// Serial.println(GPS_data);
-	// 		//ShowSerialData();
-	// 		Serial.println();
-	// 		send_JSON_data();
-
-	// 		delay(1000);
-	// 	}
-	// } else {
-	// 	if (A9G_state == true) {
-	// 		terminate_GPS();
-	// 		terminate_broker_connection();
-	// 		//sendCommandToA9G("AT+SLEEP=2",3,"OK"); //low power consumption mode
-	// 		A9G_state = false;
-	// 	}
-	// 	//send data to gateway device
-	// }
-	// Serial.println();
+	// put your main code here, to run repeatedly:
+	// Serial.println("this is loop()");
 	// delay(1000);
 
-	// ======== GATEWAY ========
-	if (!isSocketConnectSuccess) {
-		return;
-	}
-	SensorData sensorData(1.1, 1.1, 1.1, 1.1, 1.1, 1.1, String("test"), String(get_time()));
-	socket_send_sensor_data(&sensorData);
-	delay(10000);
+	// !!! loop() is for both gateway and server communication
+	xSemaphoreTake(xMutex, portMAX_DELAY);
+	communication_pollForStatus();
+	xSemaphoreGive(xMutex);
 }
+
+void communication_pollForStatus(void)
+{
+	// Serial.println("Current Status: " + String(currentStatus) + " / Previous Status: " + String(previousStatus));
+	if (currentStatus == DISCONNECT) {
+		// ======== gateway communication ========
+
+		// ======== server communication ========
+		turn_off_A9G();
+		disconnect_currMillis = millis();
+		if (previousStatus != DISCONNECT) {
+			disconnect_prevMillis = millis();
+		}
+		if (disconnect_currMillis - disconnect_prevMillis >= TIMEOUT_TIME) {
+			previousStatus = currentStatus;
+			currentStatus = A9G_CONNECTING;
+		}
+
+	} else if (currentStatus == WAREHOUSE_WIFI_CONNECTING) {
+		// ======== gateway communication ========
+
+		// ======== server communication ========
+
+	} else if (currentStatus == WAREHOUSE_WIFI_CONNECTED) {
+		// ======== gateway communication ========
+
+		// ======== server communication ========
+
+	} else if (currentStatus == WAREHOUSE_WIFI_RETRY) {
+		// ======== gateway communication ========
+
+		// ======== server communication ========
+
+	} else if (currentStatus == TRUCK_WIFI_CONNECTING) {
+		// ======== gateway communication ========
+
+		// ======== server communication ========
+
+	} else if (currentStatus == TRUCK_WIFI_CONNECTED) {
+		// ======== gateway communication ========
+
+		// ======== server communication ========
+
+	} else if (currentStatus == TRUCK_WIFI_RETRY) {
+		// ======== gateway communication ========
+
+		// ======== server communication ========
+
+	} else if (currentStatus == A9G_CONNECTING) {
+		// ======== gateway communication ========
+
+		// ======== server communication ========
+		Serial.println("===BOOTING A9G===");
+		delay(15000);
+		if (connect_mqqt_broker()) {
+			Serial.println("SUCCESSFULLY CONNECTED TO THE SERVER");
+			start_GPS();
+			previousStatus = currentStatus;
+			currentStatus == A9G_CONNECTED;
+		} else {
+			Serial.println("FAILED TO CONNECT TO THE SERVER");
+			previousStatus = currentStatus;
+			currentStatus == A9G_RETRY;
+		}
+
+	} else if (currentStatus == A9G_CONNECTED) {
+		// ======== gateway communication ========
+
+		// ======== server communication ========
+		get_GPS_data();
+		send_JSON_data(dataBuffer[idx_currRead]);
+		idx_currRead = (idx_currRead + 1) % DATA_BUFF_LENGTH;
+
+	} else if (currentStatus == A9G_RETRY) {
+		// ======== gateway communication ========
+
+		// ======== server communication ========
+		turn_off_A9G();
+		previousStatus = currentStatus;
+		currentStatus == A9G_CONNECTING;
+	}
+}
+
+void sensor_task(void *pvParameters)
+{
+	for (;;) {
+		// --Task application code here.--
+
+		// !!! for testing
+		// bme280_print();
+		// mpu6050_print();
+		// my_light_print();
+		// my_aBuzzer_alarm();
+		xSemaphoreTake(xMutex, portMAX_DELAY);
+		sensor_pollForStatus();
+		xSemaphoreGive(xMutex);
+	}
+
+	/* Tasks must not attempt to return from their implementing
+        function or otherwise exit.  In newer FreeRTOS port
+        attempting to do so will result in an configASSERT() being
+        called if it is defined.  If it is necessary for a task to
+        exit then have the task call vTaskDelete( NULL ) to ensure
+        its exit is clean. */
+	vTaskDelete(NULL);
+}
+
+void sensor_pollForStatus(void)
+{
+	if (currentStatus == DISCONNECT) {
+		if (sensors_isInitted) {
+			// turn off the sensor
+			sensors_isInitted = false;
+			digitalWrite(PIN_SENSOR_VOLTAGE, LOW);
+		} else {
+			// do nothing
+		}
+
+	} else if (currentStatus == WAREHOUSE_WIFI_CONNECTING) {
+		if (sensors_isInitted) {
+			// turn off the sensor
+			sensors_isInitted = false;
+			digitalWrite(PIN_SENSOR_VOLTAGE, LOW);
+		} else {
+			// do nothing
+		}
+
+	} else if (currentStatus == WAREHOUSE_WIFI_CONNECTED) {
+		if (sensors_isInitted) {
+			// turn off the sensor
+			sensors_isInitted = false;
+			digitalWrite(PIN_SENSOR_VOLTAGE, LOW);
+		} else {
+			// do nothing
+		}
+
+	} else if (currentStatus == WAREHOUSE_WIFI_RETRY) {
+		if (sensors_isInitted) {
+			// turn off the sensor
+			sensors_isInitted = false;
+			digitalWrite(PIN_SENSOR_VOLTAGE, LOW);
+		} else {
+			// do nothing
+		}
+
+	} else if (currentStatus == TRUCK_WIFI_CONNECTING) {
+		if (sensors_isInitted) {
+			// turn off the sensor
+			sensors_isInitted = false;
+			digitalWrite(PIN_SENSOR_VOLTAGE, LOW);
+		} else {
+			// do nothing
+		}
+
+	} else if (currentStatus == TRUCK_WIFI_CONNECTED) {
+		sensorData_currMillis = millis();
+		if (sensorData_currMillis - sensorData_prevMillis >= sensorData_delay) {
+			sensorData_prevMillis = sensorData_currMillis;
+
+			sensor_collectData();
+		}
+
+	} else if (currentStatus == TRUCK_WIFI_RETRY) {
+		if (sensors_isInitted) {
+			// turn off the sensor
+			sensors_isInitted = false;
+			digitalWrite(PIN_SENSOR_VOLTAGE, LOW);
+		} else {
+			// do nothing
+		}
+
+	} else if (currentStatus == A9G_CONNECTING) {
+		if (sensors_isInitted) {
+			// turn off the sensor
+			sensors_isInitted = false;
+			digitalWrite(PIN_SENSOR_VOLTAGE, LOW);
+		} else {
+			// do nothing
+		}
+
+	} else if (currentStatus == A9G_CONNECTED) {
+		sensorData_currMillis = millis();
+		if (sensorData_currMillis - sensorData_prevMillis >= sensorData_delay) {
+			sensorData_prevMillis = sensorData_currMillis;
+
+			sensor_collectData();
+		}
+
+	} else if (currentStatus == A9G_RETRY) {
+		if (sensors_isInitted) {
+			// turn off the sensor
+			sensors_isInitted = false;
+			digitalWrite(PIN_SENSOR_VOLTAGE, LOW);
+		} else {
+			// do nothing
+		}
+	}
+}
+
+void sensor_collectData(void)
+{
+	// if (sensors_isInitted != true) {
+	// 	// !!! sensor init
+	// 	sensors_isInitted = true;
+	// 	digitalWrite(PIN_SENSOR_VOLTAGE, HIGH);
+	// 	delay(10);
+	// 	// i2cScannerSetup();
+	// 	bme280_setup();
+	// 	mpu6050_setup();
+	// 	my_hall_init();
+	// 	my_aBuzzer_init();
+	// } else {
+	// 	// we keep updating the data buffer
+	// 	sensorData_currMillis = millis();
+	// 	if (sensorData_currMillis - sensorData_prevMillis >= sensorData_delay) {
+	// 		sensorData_prevMillis = sensorData_currMillis;
+
+	// 		double temperature = bme280_getTemperature_Celsius();
+	// 		double humidity = bme280_getHumidity();
+	// 		double pressure = bme280_getBaroPressure_hPa();
+	// 		bool magnetic = my_hall_getData();
+	// 		bool orientation = mpu6050_getOrientation;
+	// 		bool opened = my_light_getOpened();
+
+	// 		idx_currWrite = idx_currWrite % DATA_BUFF_LENGTH;
+	// 		dataBuffer[idx_currWrite].update(temperature, humidity, pressure, magnetic, orientation,
+	// 						 opened, "", String(get_time()));
+	// 		idx_currWrite++;
+	// 	}
+	// }
+
+	// sensor init
+	sensors_isInitted = true;
+	digitalWrite(PIN_SENSOR_VOLTAGE, HIGH);
+	delay(10);
+	// i2cScannerSetup();
+	bme280_setup();
+	mpu6050_setup();
+	my_hall_init();
+	my_aBuzzer_init();
+	delay(10);
+
+	double temperature = bme280_getTemperature_Celsius();
+	double humidity = bme280_getHumidity();
+	double pressure = bme280_getBaroPressure_hPa();
+	bool magnetic = my_hall_getData();
+	bool orientation = mpu6050_getOrientation;
+	bool opened = my_light_getOpened();
+
+	idx_currWrite = idx_currWrite % DATA_BUFF_LENGTH;
+	dataBuffer[idx_currWrite].update(temperature, humidity, pressure, magnetic, orientation, opened, "",
+					 String(get_time()));
+	idx_currWrite++;
+
+	// check for threshold
+	if (currThreshold.check_passed(&(dataBuffer[idx_currWrite])) != true) {
+		my_aBuzzer_alarm();
+	}
+
+	// turn off the sensors
+	sensors_isInitted = false;
+	digitalWrite(PIN_SENSOR_VOLTAGE, LOW);
+}
+
+void gatewayCommunication_task(void *pvParameters)
+{
+	for (;;) {
+		// --Task application code here.--
+		SensorData sensorData(1.1, 1.1, 1.1, 1.1, 1.1, 1.1, String("test"), String(get_time()));
+		socket_send_sensor_data(&sensorData);
+		delay(10000);
+	}
+
+	/* Tasks must not attempt to return from their implementing
+        function or otherwise exit.  In newer FreeRTOS port
+        attempting to do so will result in an configASSERT() being
+        called if it is defined.  If it is necessary for a task to
+        exit then have the task call vTaskDelete( NULL ) to ensure
+        its exit is clean. */
+	vTaskDelete(NULL);
+}
+
+// void serverCommunication_task(void *pvParameters)
+// {
+// 	for (;;) {
+// 		// --Task application code here.--
+// 		SensorData test(0, 0, 0, 0, 0, 0, "test", "test");
+// 		if (currentStatus == DISCONNECT) {
+// 			//when disconnected from gateway turn on A9G
+// 			if (A9G_state == false) {
+// 				connect_mqqt_broker();
+// 				start_GPS();
+// 				A9G_state = true;
+// 			}
+// 			//when A9G is already operating
+// 			else {
+// 				get_GPS_data();
+// 				//Serial.println();
+// 				send_JSON_data(test);
+// 				// check_new_threshold();
+// 				delay(1000);
+// 			}
+// 		} else {
+// 			//Serial.print("OFF");
+// 			turn_off_A9G();
+// 			A9G_state = false;
+// 		}
+// 		Serial.println();
+// 		delay(500);
+// 	}
+
+// 	/* Tasks must not attempt to return from their implementing
+//         function or otherwise exit.  In newer FreeRTOS port
+//         attempting to do so will result in an configASSERT() being
+//         called if it is defined.  If it is necessary for a task to
+//         exit then have the task call vTaskDelete( NULL ) to ensure
+//         its exit is clean. */
+// 	vTaskDelete(NULL);
+// }
