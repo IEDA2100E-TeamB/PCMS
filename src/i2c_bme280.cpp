@@ -1,4 +1,6 @@
-#include "peripheral_bme280.h"
+#include <Arduino.h>
+#include <Adafruit_BME280.h>
+#include "i2c_bme280.h"
 
 #define BME280_ADDR 0x76
 #define SEALEVELPRESSURE_HPA (1013.25)
@@ -10,26 +12,28 @@ static Adafruit_Sensor *bme280P;
 static uint32_t prevMillis = 0;
 static constexpr uint32_t MEASURE_DELAY = 5000;
 
-void bme280_setup()
+bool bme280_setup()
 {
 	if (!bme280.begin(BME280_ADDR, &Wire)) {
 		Serial.println("Could not find a valid BME280 sensor, check wiring!");
 		// TODO generate software interupt
-		while (1)
-			;
+		// while (1)
+		// 	;
+		return false;
 	}
 
-	// REVIEW additional setups
+	// TODO additional setups
 	// For more details on the following scenario,
 	// see chapter 3.5 "Recommended modes of operation" in the datasheet
-
 	bme280T = bme280.getTemperatureSensor();
 	bme280H = bme280.getHumiditySensor();
 	bme280P = bme280.getPressureSensor();
-
+	// print sensor info
 	bme280T->printSensorDetails();
 	bme280H->printSensorDetails();
 	bme280P->printSensorDetails();
+
+	return true;
 }
 
 float bme280_getTemperature_Celsius()
@@ -113,7 +117,7 @@ void bme280_print()
 		Serial.print(eventBaroPressure.pressure);
 		Serial.println();
 
-		Serial.println();
+		// Serial.println();
 		prevMillis = currMillis;
 	}
 }
