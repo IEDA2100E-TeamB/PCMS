@@ -24,7 +24,7 @@ void testSetup()
 	// 	; // wait for serial port to connect. Needed for native USB port only
 	// }
 	Serial.println("serial setup done!");
-	pinMode(LED_BUILTIN, OUTPUT);
+	// pinMode(LED_BUILTIN, OUTPUT);
 	inputString.reserve(200); // reserve 200 bytes for the inputString:
 }
 

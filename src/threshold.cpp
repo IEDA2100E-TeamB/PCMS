@@ -48,14 +48,14 @@ bool Threshold::check_passed(SensorData *sensorData)
 	if (this->minPressure - sensorData->get_pressure() > comparrationInterval) {
 		return false;
 	}
-	if (sensorData->get_magnetic_feild() != this->allowMagneticFeild) {
-		return false;
-	}
-	if (sensorData->get_orientation() != this->allowOrientationChange) {
-		return false;
-	}
-	if (sensorData->get_opened()) {
-		return false;
-	}
+	// if (sensorData->get_magnetic_feild() != this->allowMagneticFeild) {
+	// 	return false;
+	// }
+	// if (sensorData->get_orientation() != this->allowOrientationChange) {
+	// 	return false;
+	// }
+	// if (sensorData->get_opened()) {
+	// 	return false;
+	// }
 	return true;
 }

@@ -14,7 +14,7 @@ void my_light_print()
 		prevMillis = currMillis;
 		uint16_t val;
 		// val = analogRead(PIN_ADC_LIGHT_SENSOR);
-		val = analogRead(4);
+		val = analogRead(34);
 		Serial.println(val, DEC);
 	}
 }
@@ -22,12 +22,12 @@ void my_light_print()
 uint16_t my_light_getData()
 {
 	// return analogRead(PIN_ADC_LIGHT_SENSOR);
-	return analogRead(4);
+	return analogRead(34);
 }
 
 bool my_light_getOpened()
 {
-	if (my_light_getData() < 3600) {
+	if (my_light_getData() < 2500) {
 		return true;
 	} else {
 		return false;

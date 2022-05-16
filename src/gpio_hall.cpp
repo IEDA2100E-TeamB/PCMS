@@ -8,13 +8,13 @@
 void my_hall_init()
 {
 	// pinMode(PIN_GPIO_HALL_SENSOR, INPUT_PULLDOWN);
-	pinMode(15, INPUT_PULLDOWN);
+	pinMode(35, INPUT_PULLDOWN);
 }
 
 bool my_hall_getData()
 {
 	// if (digitalRead(PIN_GPIO_HALL_SENSOR) == HIGH) {
-	if (digitalRead(15) == HIGH) {
+	if (digitalRead(35) == HIGH) {
 		return true;
 	} else {
 		return false;

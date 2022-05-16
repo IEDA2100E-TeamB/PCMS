@@ -28,9 +28,9 @@ static const uint8_t SERIAL0_RX = 3;
 static const uint8_t SERIAL0_TX = 1;
 // sensor
 static const uint8_t PIN_SENSOR_VOLTAGE = 2;
-static const uint8_t PIN_ADC_LIGHT_SENSOR = 4;
-static const uint8_t PIN_GPIO_HALL_SENSOR = 15;
-static const uint8_t PIN_GPIO_ACTIVE_BUZZER = 18;
+static const uint8_t PIN_ADC_LIGHT_SENSOR = 34;
+static const uint8_t PIN_GPIO_HALL_SENSOR = 35;
+static const uint8_t PIN_GPIO_ACTIVE_BUZZER = 25;
 static const uint8_t I2C_SDA = 21;
 static const uint8_t I2C_SCL = 22;
 // server communication
@@ -69,9 +69,11 @@ static uint32_t buzzer_prevMillis = 0;
 static uint32_t buzzer_currMillis = 0;
 static uint32_t buzzer_delay = 5000;
 // gateway communication
-static bool isWiFiInitSuccess = false;
 static bool isSocketConnectSuccess = false;
 static bool isTimeSyncSuccess = false;
+static uint32_t gateway_prevMillis = 0;
+static uint32_t gateway_currMillis = 0;
+static uint32_t gateway_delay = 30000;
 // server communication
 uint32_t disconnect_prevMillis = 0;
 uint32_t disconnect_currMillis = 0;
