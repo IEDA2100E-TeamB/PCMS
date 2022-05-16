@@ -45,3 +45,4 @@ libdeps/
 *.app
 
 */config.cpp
+*.bak
