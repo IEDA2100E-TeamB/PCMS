@@ -5,7 +5,6 @@
 #include "sensor_data.hpp"
 
 // array sizes
-const uint8_t wifiConfigListSize = 10;
 const uint8_t hostConfigListSize = 10;
 const uint8_t ntpServerListSize = 3;
 const uint8_t sensorDataRingBufferSize = 50;
@@ -22,7 +21,8 @@ struct HostConfig {
 	uint16_t port;
 };
 
-extern WiFiConfig wifiConfigList[wifiConfigListSize];
+extern WiFiConfig warehouseWiFiConfig;
+extern WiFiConfig truckWiFiConfig;
 extern HostConfig hostConfigList[hostConfigListSize];
 extern SensorData sensorDataRingBuffer[sensorDataRingBufferSize];
 extern const char *ntpServerList[3];

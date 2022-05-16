@@ -17,6 +17,8 @@
 #include "unix_time.hpp"
 // server communication
 #include "PCMS_GPS_GPRS.hpp"
+// config
+#include "config.hpp"
 
 // ======== FUNCTION PROTOTYPES ========
 void sensor_task(void *pvParameters);
@@ -46,24 +48,24 @@ void setup()
 	sensors_isInitted = false;
 
 	// !!! for testing
-	// digitalWrite(PIN_SENSOR_VOLTAGE, HIGH);
-	// delay(10);
-	// bme280_setup();
-	// mpu6050_setup();
-	// my_hall_init();
-	// my_aBuzzer_init();
-	// Serial.println("sensor initted!");
+	digitalWrite(PIN_SENSOR_VOLTAGE, HIGH);
+	delay(50);
+	bme280_setup();
+	mpu6050_setup();
+	my_hall_init();
+	my_aBuzzer_init();
+	Serial.println("sensor initted!");
 
 	// ======== gateway communication init ========
-	if (wifi_init() != true) {
-		return;
-	}
-	if (sync_time() != true) {
-		return;
-	}
-	if (socket_connect() != true) {
-		return;
-	}
+	// if (wifi_init() != true) {
+	// 	return;
+	// }
+	// if (sync_time() != true) {
+	// 	return;
+	// }
+	// if (socket_connect() != true) {
+	// 	return;
+	// }
 
 	// ======== server communication init ========
 	Serial2.begin(115200);
@@ -121,32 +123,85 @@ void communication_pollForStatus(void)
 
 	} else if (currentStatus == WAREHOUSE_WIFI_CONNECTING) {
 		// ======== gateway communication ========
+		if (wifi_init(warehouseWiFiConfig)) {
+			isTimeSyncSuccess = sync_time();
+			previousStatus = currentStatus;
+			currentStatus = WAREHOUSE_WIFI_CONNECTED;
+		} else {
+			previousStatus = currentStatus;
+			currentStatus = WAREHOUSE_WIFI_RETRY;
+		}
 
 		// ======== server communication ========
 
 	} else if (currentStatus == WAREHOUSE_WIFI_CONNECTED) {
 		// ======== gateway communication ========
-
+		if (!is_wifi_connected()) {
+			isSocketConnectSuccess = false;
+			previousStatus = currentStatus;
+			currentStatus = WAREHOUSE_WIFI_RETRY;
+		}
 		// ======== server communication ========
 
 	} else if (currentStatus == WAREHOUSE_WIFI_RETRY) {
 		// ======== gateway communication ========
-
+		if (wifi_retry(warehouseWiFiConfig)) {
+			isTimeSyncSuccess = sync_time();
+			previousStatus = currentStatus;
+			currentStatus = WAREHOUSE_WIFI_CONNECTED;
+		} else {
+			previousStatus = currentStatus;
+			currentStatus = TRUCK_WIFI_CONNECTING;
+		}
 		// ======== server communication ========
 
 	} else if (currentStatus == TRUCK_WIFI_CONNECTING) {
 		// ======== gateway communication ========
-
+		if (wifi_init(truckWiFiConfig)) {
+			isTimeSyncSuccess = sync_time();
+			previousStatus = currentStatus;
+			currentStatus = TRUCK_WIFI_CONNECTED;
+		} else {
+			previousStatus = currentStatus;
+			currentStatus = TRUCK_WIFI_RETRY;
+		}
 		// ======== server communication ========
 
 	} else if (currentStatus == TRUCK_WIFI_CONNECTED) {
 		// ======== gateway communication ========
-
+		if (!is_wifi_connected()) {
+			socket_disconnect();
+			isSocketConnectSuccess = false;
+			previousStatus = currentStatus;
+			currentStatus = TRUCK_WIFI_RETRY;
+		} else {
+			if (isSocketConnectSuccess) {
+				// socket_send_sensor_data(dataBuffer);
+				gateway_currMillis = millis();
+				if (gateway_currMillis - gateway_prevMillis >= gateway_delay) {
+					gateway_prevMillis = gateway_currMillis;
+					for (int i = 0; i < 5; ++i) {
+						int idx = (idx_currRead + i) % DATA_BUFF_LENGTH;
+						SensorData sd = dataBuffer[idx];
+						socket_send_sensor_data(&sd);
+					}
+					idx_currRead += 5;
+				}
+			} else {
+				isSocketConnectSuccess = socket_connect();
+			}
+		}
 		// ======== server communication ========
 
 	} else if (currentStatus == TRUCK_WIFI_RETRY) {
 		// ======== gateway communication ========
-
+		if (wifi_retry(truckWiFiConfig)) {
+			previousStatus = currentStatus;
+			currentStatus = TRUCK_WIFI_CONNECTED;
+		} else {
+			previousStatus = currentStatus;
+			currentStatus = WAREHOUSE_WIFI_CONNECTING;
+		}
 		// ======== server communication ========
 
 	} else if (currentStatus == A9G_CONNECTING) {
@@ -159,11 +214,11 @@ void communication_pollForStatus(void)
 			Serial.println("SUCCESSFULLY CONNECTED TO THE SERVER");
 			start_GPS();
 			previousStatus = currentStatus;
-			currentStatus == A9G_CONNECTED;
+			currentStatus = A9G_CONNECTED;
 		} else {
 			Serial.println("FAILED TO CONNECT TO THE SERVER");
 			previousStatus = currentStatus;
-			currentStatus == A9G_RETRY;
+			currentStatus = A9G_RETRY;
 		}
 
 	} else if (currentStatus == A9G_CONNECTED) {
@@ -180,7 +235,7 @@ void communication_pollForStatus(void)
 		// ======== server communication ========
 		turn_off_A9G();
 		previousStatus = currentStatus;
-		currentStatus == A9G_CONNECTING;
+		currentStatus = A9G_CONNECTING;
 	}
 }
 
@@ -190,13 +245,13 @@ void sensor_task(void *pvParameters)
 		// --Task application code here.--
 
 		// !!! for testing
-		// bme280_print();
-		// mpu6050_print();
-		// my_light_print();
+		bme280_print();
+		mpu6050_print();
+		my_light_print();
 		// my_aBuzzer_alarm();
-		xSemaphoreTake(xMutex, portMAX_DELAY);
-		sensor_pollForStatus();
-		xSemaphoreGive(xMutex);
+		// xSemaphoreTake(xMutex, portMAX_DELAY);
+		// sensor_pollForStatus();
+		// xSemaphoreGive(xMutex);
 	}
 
 	/* Tasks must not attempt to return from their implementing
@@ -260,6 +315,8 @@ void sensor_pollForStatus(void)
 		if (sensorData_currMillis - sensorData_prevMillis >= sensorData_delay) {
 			sensorData_prevMillis = sensorData_currMillis;
 
+			digitalWrite(PIN_SENSOR_VOLTAGE, HIGH);
+			Serial.println("sensor pin activated");
 			sensor_collectData();
 		}
 
@@ -286,6 +343,8 @@ void sensor_pollForStatus(void)
 		if (sensorData_currMillis - sensorData_prevMillis >= sensorData_delay) {
 			sensorData_prevMillis = sensorData_currMillis;
 
+			digitalWrite(PIN_SENSOR_VOLTAGE, HIGH);
+			Serial.println("sensor pin activated");
 			sensor_collectData();
 		}
 
@@ -347,7 +406,7 @@ void sensor_collectData(void)
 	double humidity = bme280_getHumidity();
 	double pressure = bme280_getBaroPressure_hPa();
 	bool magnetic = my_hall_getData();
-	bool orientation = mpu6050_getOrientation;
+	bool orientation = mpu6050_getOrientation();
 	bool opened = my_light_getOpened();
 
 	idx_currWrite = idx_currWrite % DATA_BUFF_LENGTH;
