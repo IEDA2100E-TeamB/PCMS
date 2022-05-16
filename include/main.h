@@ -39,6 +39,7 @@ static const uint8_t SERIAL2_TX = 17;
 
 // ======== VARIABLES ========
 // system status
+SemaphoreHandle_t xMutex;
 // std::atomic<system_status> currentStatus{ WAREHOUSE_WIFI_CONNECTING };
 // std::atomic<system_status> previousStatus{ WAREHOUSE_WIFI_CONNECTING };
 volatile system_status currentStatus{ WAREHOUSE_WIFI_CONNECTING };

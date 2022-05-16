@@ -22,6 +22,7 @@
 void sensor_task(void *pvParameters);
 void sensor_pollForStatus(void);
 void sensor_collectData(void);
+void communication_pollForStatus(void);
 void gatewayCommunication_task(void *pvParameters);
 void serverCommunication_task(void *pvParameters);
 
@@ -32,6 +33,7 @@ void setup()
 	Serial.begin(115200);
 
 	// ======== system status init ========
+	xMutex = xSemaphoreCreateMutex();
 	currentStatus = WAREHOUSE_WIFI_CONNECTING;
 	currentStatus = WAREHOUSE_WIFI_CONNECTING;
 	idx_currRead = 0;
@@ -95,6 +97,13 @@ void loop()
 	// delay(1000);
 
 	// !!! loop() is for both gateway and server communication
+	xSemaphoreTake(xMutex, portMAX_DELAY);
+	communication_pollForStatus();
+	xSemaphoreGive(xMutex);
+}
+
+void communication_pollForStatus(void)
+{
 	// Serial.println("Current Status: " + String(currentStatus) + " / Previous Status: " + String(previousStatus));
 	if (currentStatus == DISCONNECT) {
 		// ======== gateway communication ========
@@ -185,8 +194,9 @@ void sensor_task(void *pvParameters)
 		// mpu6050_print();
 		// my_light_print();
 		// my_aBuzzer_alarm();
-
+		xSemaphoreTake(xMutex, portMAX_DELAY);
 		sensor_pollForStatus();
+		xSemaphoreGive(xMutex);
 	}
 
 	/* Tasks must not attempt to return from their implementing
