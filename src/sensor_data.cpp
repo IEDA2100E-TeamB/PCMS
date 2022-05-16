@@ -47,7 +47,7 @@ void SensorData::print(void)
 	Serial.println(this->humidity);
 	Serial.print("pressure: ");
 	Serial.println(this->pressure);
-	Serial.print("magneticFeild: ");
+	Serial.print("magnetic_feild: ");
 	Serial.println(this->magneticFeild);
 	Serial.print("orientation: ");
 	Serial.println(this->orientation);

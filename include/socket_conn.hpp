@@ -3,6 +3,7 @@
 
 #include <WiFi.h>
 #include "sensor_data.hpp"
+#include "threshold.hpp"
 #include "config.hpp"
 
 extern WiFiClient wifiClient;
@@ -28,5 +29,7 @@ void socket_disconnect(void);
 bool socket_send_sensor_data(SensorData *);
 
 bool socket_send_alarm_message(bool isAlarming);
+
+bool socket_recv_threshold(Threshold *thres);
 
 #endif
