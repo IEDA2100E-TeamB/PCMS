@@ -228,6 +228,7 @@ void communication_pollForStatus(void)
 		// ======== server communication ========
 		get_GPS_data();
 		send_JSON_data(dataBuffer[idx_currRead]);
+		check_new_threshold();
 		idx_currRead = (idx_currRead + 1) % DATA_BUFF_LENGTH;
 
 	} else if (currentStatus == A9G_RETRY) {
