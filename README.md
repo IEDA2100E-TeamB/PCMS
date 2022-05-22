@@ -1,13 +1,15 @@
 # Parcel Condition Monitoring System (PCMS)
 
-## Branches:
+## Branches
+
 - master: stable release (PIC: **Alex**)
 - dev: development and merging test (PIC: **Alex**)
 - sensor: Part A: sensor system (PIC: **Alex**)
 - p2g_conn: Part B: parcel to gateway communication (PIC: **Tommy**)
 - GPS_GPRS: Part C: GNSS system & parcel to server communication (PIC: **Hojin**)
 
-## Development environment:
+## Development environment
+
 - Board:
   - ~~Arduino UNO R3~~
   - NodeMCU-32S (the variant given to **Hojin**)
@@ -16,10 +18,11 @@
 - IDE:
   - editor: [VSCode](https://code.visualstudio.com/)
   - extensions:
-    -  [PlatformIO](https://platformio.org/)
-    -  [C/C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
+    - [PlatformIO](https://platformio.org/)
+    - [C/C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
 
-## Useful reference websites:
+## Useful reference websites
+
 - PlatformIO:
   - [Development Platform: Espressif 32](https://docs.platformio.org/en/latest/platforms/espressif32.html)
   - [Development Board: NodeMCU-32S](https://docs.platformio.org/en/latest/boards/espressif32/nodemcu-32s.html)
